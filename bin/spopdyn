@@ -1,0 +1,54 @@
+# -*-Python-*-
+#!/usr/bin/env python
+import sys
+import os
+import spopdyn.sbml_writer
+import spopdyn.libpssa_config
+import subprocess
+import logging
+
+logger = logging.getLogger("spopdyn")
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(logging.Formatter('%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(ch)
+
+
+if __name__ == "__main__":
+
+    
+    name = sys.argv[1]
+
+    if not os.path.exists(name):
+        os.mkdir(name)
+        logger.info("Directory {}/ created.".format(name))    
+    else:
+        logger.warning("Overwriting {}/".format(name))
+
+    sbml_file = name+"/model.sbml" 
+    config_file = name+"/config.cfg"
+
+    sbml = spopdyn.sbml_writer.CompetitiveLV([1]*10,1,1,0.5)
+    sbml.save(sbml_file)
+    logger.info("SBML file for model '{}' saved as {}.".format(sbml,sbml_file))
+
+
+    cfg = spopdyn.libpssa_config.libpSSA_config(sbml_file, name+"/", sbml.species,
+                                                  dt=0.01, tend=1000, n=3,
+                                                  spatial=True, gridpoints=10, K=5000)
+    with open(config_file,"w") as f:
+        f.write(cfg)
+    logger.info("config file saved as {}.".format(config_file))
+
+    logger.info("Running pSSAlib...")
+    try:
+        re = subprocess.check_output(("/home/guilhem/tools/libpssa-1.0.0RC/pssa_cli/pssa -c {}"
+                                     ).format(config_file), shell=True)
+    except Exception as e:
+        logger.error(e)
+
+
+ 
+
+
+
