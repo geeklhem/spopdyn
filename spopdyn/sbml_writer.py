@@ -1,5 +1,8 @@
-import libsbml
 import logging
+import itertools
+
+import libsbml
+import numpy as np
 
 logger = logging.getLogger("spopdyn")
 
@@ -10,6 +13,7 @@ class SBMLwriter(object):
     """
     def __init__(self):
         name = "Generic model"
+        filename = None
         try:
             self.document = libsbml.SBMLDocument(2,4)
         except ValueError:
@@ -24,7 +28,7 @@ class SBMLwriter(object):
         per_second = self.model.createUnitDefinition()
         per_second.setId('per_second')
         unit = per_second.createUnit()
-        unit.setKind(UNIT_KIND_SECOND)
+        unit.setKind(libsbml.UNIT_KIND_SECOND)
         unit.setExponent(-1)
 
         # Compartment
@@ -36,9 +40,17 @@ class SBMLwriter(object):
 
         self.model.setId(self.__repr__())
 
-    def save(self,filename):
+    def save(self,filename=None,set_filename=True):
+        if filename == None:
+            if self.filename == None:
+                raise ValueError
+            else:
+                filename = self.filename
         libsbml.writeSBMLToFile(self.document,filename)
-        
+
+        if set_filename == True:
+            self.filename = filename
+
     def __repr__(self):
         return self.name
 
@@ -55,33 +67,33 @@ class CompetitiveLV(SBMLwriter):
         """
         
         self.n = len(r)
-        self.species = ["SP{{:0{}}}".format(int(np.log10(n)+1)).format(i) for i in range(n)]
-        self.name = "Competitive Lotka Volterra with {} species".format(n)
+        self.species = ["SP{{:0{}}}".format(int(np.log10(self.n)+1)).format(i) for i in range(self.n)]
+        self.name = "Competitive Lotka Volterra with {} species".format(self.n)
         SBMLwriter.__init__(self)
 
         # Turn alpha into a matrix:
         if type(alpha) == int or type(alpha)== float :
-            a = np.zeros((n,n)) + alpha
+            a = np.zeros((self.n,self.n)) + alpha
         # Turn d into an array: 
         if type(d) == float or type(d) == int:
-            d = np.zeros(n) + d
+            d = np.zeros(self.n) + d
         # Turn init_prop into an array:
         if type(init_prop) == float or type(init_prop)== int:
-            init_prop = np.zeros(d) + init_prop
+            init_prop = np.zeros(self.n) + init_prop
 
         # Add diffusion constants.
         self.model = self.diffusion(self.model, self.species, d)
 
         # Reproduction and intraspecific competition 
-        for sp,ri,ip in zip(species,r,initial_prop):
+        for sp,ri,ip in zip(self.species,r,init_prop):
             self.model = self.add_sp(self.model,sp,ri,ip)
 
         # Interspecific competition. 
-        for sp1,sp2 in itertools.combinations(species,2):
+        for sp1,sp2 in itertools.combinations(self.species,2):
             n1 = int(sp1[2:])
             n2 = int(sp2[2:])
-            self.model = inter_spe_comp(self.model, sp1, sp2, a[n1,n2])
-            self.model = inter_spe_comp(self.model, sp2, sp1, a[n2,n1])
+            self.model = self.inter_spe_comp(self.model, sp1, sp2, a[n1,n2])
+            self.model = self.inter_spe_comp(self.model, sp2, sp1, a[n2,n1])
 
         if self.document.getNumErrors() != 0:
             logger.error(self.document.printErrors())
@@ -119,7 +131,7 @@ class CompetitiveLV(SBMLwriter):
         reproduction.setReversible(False)
 
         kinetic_law = reproduction.createKineticLaw()
-        kinetic_law.setMath(parseL3Formula("1*"+gr.getId()))
+        kinetic_law.setMath(libsbml.parseL3Formula("1*"+gr.getId()))
 
         reactant = reproduction.createReactant()
         reactant.setSpecies(s.getId())
@@ -135,7 +147,7 @@ class CompetitiveLV(SBMLwriter):
         comp.setReversible(False)
 
         kinetic_law = comp.createKineticLaw()
-        kinetic_law.setMath(parseL3Formula("1*"+gr.getId()))
+        kinetic_law.setMath(libsbml.parseL3Formula("1*"+gr.getId()))
 
         reactant = comp.createReactant()
         reactant.setSpecies(s.getId())
@@ -147,14 +159,14 @@ class CompetitiveLV(SBMLwriter):
 
         return model
 
-    def inter_spe_comp(model,s1,s2,a):
+    def inter_spe_comp(self,model,s1,s2,a):
         comp = model.createReaction()
         comp.setId('intra_spe_comp_'+s1+"_"+s2) 
         comp.setReversible(False)
 
         kinetic_law = comp.createKineticLaw()
         formula = "r_{}*{}".format(s1, a)
-        kinetic_law.setMath(parseL3Formula(formula))
+        kinetic_law.setMath(libsbml.parseL3Formula(formula))
 
         reactant = comp.createReactant()
         reactant.setSpecies(s1)
