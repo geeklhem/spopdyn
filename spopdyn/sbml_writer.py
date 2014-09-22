@@ -56,13 +56,13 @@ class SBMLwriter(object):
 
 
 class CompetitiveLV(SBMLwriter): 
-    def __init__(self,r,d,alpha=1,init_prop=0.5):
+    def __init__(self,r,d,alpha=1,init_pop=1000):
         """ Cosntructor
         Args:
             r (array): specific growth rate.
             d (array or floar): diffusion constant.
             alpha (matrix or float): interspecific competition strength.
-            init_prop (array or float): initial proportion (with respect
+            init_pop (array or float): initial proportion (with respect
                 to the carrying capacity) of each species.
         """
         
@@ -77,15 +77,15 @@ class CompetitiveLV(SBMLwriter):
         # Turn d into an array: 
         if type(d) == float or type(d) == int:
             d = np.zeros(self.n) + d
-        # Turn init_prop into an array:
-        if type(init_prop) == float or type(init_prop)== int:
-            init_prop = np.zeros(self.n) + init_prop
+        # Turn init_pop into an array:
+        if type(init_pop) == float or type(init_pop)== int:
+            init_pop = np.zeros(self.n) + init_pop
 
         # Add diffusion constants.
         self.model = self.diffusion(self.model, self.species, d)
 
         # Reproduction and intraspecific competition 
-        for sp,ri,ip in zip(self.species,r,init_prop):
+        for sp,ri,ip in zip(self.species,r,init_pop):
             self.model = self.add_sp(self.model,sp,ri,ip)
 
         # Interspecific competition. 

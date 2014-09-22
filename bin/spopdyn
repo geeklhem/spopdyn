@@ -4,51 +4,87 @@ import sys
 import os
 import spopdyn.sbml_writer
 import spopdyn.libpssa_config
+import spopdyn.extract
+import spopdyn.display
 import subprocess
 import logging
+import cPickle as pickle 
+import numpy as np
 
 logger = logging.getLogger("spopdyn")
+logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 ch.setFormatter(logging.Formatter('%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(ch)
 
+logging.addLevelName( logging.WARNING, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
+logging.addLevelName( logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
+logging.addLevelName( logging.INFO, "\033[1;42m%s\033[1;0m" % logging.getLevelName(logging.INFO))
+logging.addLevelName( logging.DEBUG, "\033[1;43m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
+logging.getLogger().addFilter(logging.Filter("vcontact"))
 
 if __name__ == "__main__":
 
-    
+    spatial = True 
     name = sys.argv[1]
 
     if not os.path.exists(name):
         os.mkdir(name)
         logger.info("Directory {}/ created.".format(name))    
     else:
-        logger.warning("Overwriting {}/".format(name))
+        logger.warning("{}/ exists already.".format(name))
 
     sbml_file = name+"/model.sbml" 
     config_file = name+"/config.cfg"
+    data_file = name+"/data.pkle"
+    
+    if not os.path.exists(sbml_file):
+        sbml = spopdyn.sbml_writer.CompetitiveLV(np.random.random(20),1,1,100)
+        sbml.save(sbml_file)
+        logger.info("SBML file for model '{}' saved as {}.".format(sbml,sbml_file))
 
-    sbml = spopdyn.sbml_writer.CompetitiveLV([1]*10,1,1,0.5)
-    sbml.save(sbml_file)
-    logger.info("SBML file for model '{}' saved as {}.".format(sbml,sbml_file))
+    if not os.path.exists(config_file):
+        cfg = spopdyn.libpssa_config.libpSSA_config(sbml_file, name+"/", sbml.species,
+                                                    dt=0.1, tend=100, n=1,
+                                                    spatial=spatial, gridpoints=10, K=5000*100)
+        with open(config_file,"w") as f:
+            f.write(cfg)
+            logger.info("config file saved as {}.".format(config_file))
 
+    if not os.path.exists(name+"/libpssa.log"):
+        logger.info("Running pSSAlib...")
+        try:
+            re = subprocess.check_output(("/home/guilhem/tools/libpssa-1.0.0RC/pssa_cli/pssa -c {}"
+                                         ).format(config_file), shell=True)
+        except Exception as e:
+            logger.error(e)
+        else:
+            with open(name+"/libpssa.log",'w') as f:
+                f.write(re)
+                
+    logger.info("Data extraction...")
+    if spatial:
+        if not os.path.exists(data_file):
+            data = spopdyn.extract.data_extract_2D("{}/PDM/PSSA_trajectory_0_0.txt".format(name),50)
+            with open(data_file,"w") as f:
+                logger.info("Saving data as {}.".format(data_file))
+                pickle.dump(data,f)
 
-    cfg = spopdyn.libpssa_config.libpSSA_config(sbml_file, name+"/", sbml.species,
-                                                  dt=0.01, tend=1000, n=3,
-                                                  spatial=True, gridpoints=10, K=5000)
-    with open(config_file,"w") as f:
-        f.write(cfg)
-    logger.info("config file saved as {}.".format(config_file))
+        else:
+            with open(data_file,"r") as f:
+                logger.info("Loading data from {}.".format(data_file))
+                data = pickle.load(f)
 
-    logger.info("Running pSSAlib...")
-    try:
-        re = subprocess.check_output(("/home/guilhem/tools/libpssa-1.0.0RC/pssa_cli/pssa -c {}"
-                                     ).format(config_file), shell=True)
-    except Exception as e:
-        logger.error(e)
+        spopdyn.display.matrix_movie(data,
+                                     ("Biomass","Species Richness","Diversity"),
+                                     (5000,10,10),
+                                     name+"/")
 
+    elif not spatial and not os.path.exists(data_file):
+        spopdyn.extract.data_extract_single("{}/PDM/PSSA_trajectory_0_0.txt".format(name))
+            
 
- 
-
+    
 
 

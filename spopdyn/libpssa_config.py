@@ -10,10 +10,10 @@ def libpSSA_config(sbml_file, outpath, species,
     conf = {
         "output_path": outpath,
         "mode": "trial",
-        "methods":  0,
+        "methods":  1,
         "species": ",".join(species),
         "gnuplot": "no",
-        "verbose": "no",
+        "verbose": "yes",
         "dt": dt,
         "tstart": 0,
         "tend": tend,
@@ -24,9 +24,10 @@ def libpSSA_config(sbml_file, outpath, species,
         "gridpoints": gridpoints,
         "initialpop":"multiply",
         "omega":K,
+        "stat_info":"single",
     }
 
-    s = "\n".join(["{} = {}".format(k,v) for k,v in conf.items()])
+    s = "\n".join(["{}\t\t\t= {}".format(k,v) for k,v in conf.items()]) +"\n"
     return s 
 
 
