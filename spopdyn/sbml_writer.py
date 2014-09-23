@@ -3,6 +3,7 @@ import itertools
 
 import libsbml
 import numpy as np
+import scipy.stats as st
 
 logger = logging.getLogger("spopdyn")
 
@@ -56,21 +57,29 @@ class SBMLwriter(object):
 
 
 class CompetitiveLV(SBMLwriter): 
-    def __init__(self,r,d,alpha=1,init_pop=1000):
+    def __init__(self,n,d,alpha=1,init_pop=1000,gridpoints=10):
         """ Cosntructor
         Args:
-            r (array): specific growth rate.
+            n (array): specific growth rate.
             d (array or floar): diffusion constant.
             alpha (matrix or float): interspecific competition strength.
             init_pop (array or float): initial proportion (with respect
                 to the carrying capacity) of each species.
         """
+
         
-        self.n = len(r)
+        self.n = n    
+        param = np.random.random((n,5))
+        param[:,2:5] /= 3
+        self.param = param 
+        r = []
+        
         self.species = ["SP{{:0{}}}".format(int(np.log10(self.n)+1)).format(i) for i in range(self.n)]
         self.name = "Competitive Lotka Volterra with {} species".format(self.n)
         SBMLwriter.__init__(self)
 
+        self.temperature, self.habitat = create_environment(gridpoints)
+        
         # Turn alpha into a matrix:
         if type(alpha) == int or type(alpha)== float :
             a = np.zeros((self.n,self.n)) + alpha
@@ -85,15 +94,16 @@ class CompetitiveLV(SBMLwriter):
         self.model = self.diffusion(self.model, self.species, d)
 
         # Reproduction and intraspecific competition 
-        for sp,ri,ip in zip(self.species,r,init_pop):
-            self.model = self.add_sp(self.model,sp,ri,ip)
+        for sp,p,ip in zip(self.species,param,init_pop):
+            r.append(growth_rate(self.temperature,self.habitat,p[0],p[1],p[2],p[3],p[4]))
+            self.model = self.add_sp(self.model,sp,r[-1],ip)
 
         # Interspecific competition. 
         for sp1,sp2 in itertools.combinations(self.species,2):
             n1 = int(sp1[2:])
             n2 = int(sp2[2:])
-            self.model = self.inter_spe_comp(self.model, sp1, sp2, a[n1,n2])
-            self.model = self.inter_spe_comp(self.model, sp2, sp1, a[n2,n1])
+            self.model = self.inter_spe_comp(self.model, sp1, sp2, a[n1,n2]*r[n1])
+            self.model = self.inter_spe_comp(self.model, sp2, sp1, a[n2,n1]*r[n2])
 
         if self.document.getNumErrors() != 0:
             logger.error(self.document.printErrors())
@@ -122,7 +132,7 @@ class CompetitiveLV(SBMLwriter):
         gr = model.createParameter()
         gr.setId('r_{}'.format(name))
         gr.setName('r_{}'.format(name))
-        gr.setValue(r)
+        gr.setValue(0)
         gr.setUnits('per_second')
 
         # Reproduction
@@ -130,6 +140,8 @@ class CompetitiveLV(SBMLwriter):
         reproduction.setId('reproduction_'+name) 
         reproduction.setReversible(False)
 
+        reproduction.appendAnnotation('<libpSSA:rate xmlns:libpSSA="uri" rate="'+';'.join(map(str,r))+'"></libpSSA:rate>')
+        
         kinetic_law = reproduction.createKineticLaw()
         kinetic_law.setMath(libsbml.parseL3Formula("1*"+gr.getId()))
 
@@ -149,6 +161,8 @@ class CompetitiveLV(SBMLwriter):
         kinetic_law = comp.createKineticLaw()
         kinetic_law.setMath(libsbml.parseL3Formula("1*"+gr.getId()))
 
+        comp.appendAnnotation('<libpSSA:rate xmlns:libpSSA="uri" rate="'+';'.join(map(str,r))+'"></libpSSA:rate>')
+
         reactant = comp.createReactant()
         reactant.setSpecies(s.getId())
         reactant.setStoichiometry(2)
@@ -159,15 +173,16 @@ class CompetitiveLV(SBMLwriter):
 
         return model
 
-    def inter_spe_comp(self,model,s1,s2,a):
+    def inter_spe_comp(self,model,s1,s2,rate):
         comp = model.createReaction()
         comp.setId('intra_spe_comp_'+s1+"_"+s2) 
         comp.setReversible(False)
 
         kinetic_law = comp.createKineticLaw()
-        formula = "r_{}*{}".format(s1, a)
+        formula = "1.0"
         kinetic_law.setMath(libsbml.parseL3Formula(formula))
-
+        comp.appendAnnotation('<libpSSA:rate xmlns:libpSSA="uri" rate="'+';'.join(map(str,rate))+'"></libpSSA:rate>')
+        
         reactant = comp.createReactant()
         reactant.setSpecies(s1)
         reactant.setStoichiometry(1)    
@@ -181,3 +196,27 @@ class CompetitiveLV(SBMLwriter):
         product.setStoichiometry(1)    
 
         return model 
+
+
+def create_environment(gridpoints):
+    """
+    Args: 
+        gridpoints (int): number of gridpoints
+    Returns:
+       (tuple) two gridpoints^2 matrix: environment and temperature.
+    """
+    temperature = np.random.uniform(size=(gridpoints,gridpoints))
+    habitat = np.random.uniform(size=(gridpoints,gridpoints))
+    return habitat,temperature
+
+    
+def growth_rate(temperature,habitat,muH,sH,muT,sT,rho):
+    l = len(temperature.flat)
+    rate = np.zeros(l)
+    for x in range(l):
+        cov = np.array(([sH**2,rho*sT*sH],[rho*sT*sH,sT**2]))
+        rate[x] = st.multivariate_normal.pdf((habitat.flat[x],temperature.flat[x]),
+                                             [muH,muT],
+                                             cov)
+        rate[x] = max(rate[x],1e-300)
+    return rate

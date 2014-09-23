@@ -10,6 +10,8 @@ import subprocess
 import logging
 import cPickle as pickle 
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 logger = logging.getLogger("spopdyn")
 logger.setLevel(logging.DEBUG)
@@ -26,6 +28,14 @@ logging.getLogger().addFilter(logging.Filter("vcontact"))
 
 if __name__ == "__main__":
 
+    SPECIES = 20
+    GRIDPOINTS = 25
+    
+    if len(sys.argv)>2:
+        SPECIES = int(sys.argv[2])
+    if len(sys.argv)>3:
+        GRIDPOINTS = int(sys.argv[3])
+    
     spatial = True 
     name = sys.argv[1]
 
@@ -40,14 +50,20 @@ if __name__ == "__main__":
     data_file = name+"/data.pkle"
     
     if not os.path.exists(sbml_file):
-        sbml = spopdyn.sbml_writer.CompetitiveLV(np.random.random(20),1,1,100)
+        sbml = spopdyn.sbml_writer.CompetitiveLV(SPECIES,1,1,100,GRIDPOINTS)
         sbml.save(sbml_file)
+        
+        spopdyn.display.exp_summary(sbml.habitat,sbml.temperature,sbml.param)
+        plt.tight_layout()
+        plt.savefig(name+"/summary.png",pad_inches=0)
+        plt.clf()
+
         logger.info("SBML file for model '{}' saved as {}.".format(sbml,sbml_file))
 
     if not os.path.exists(config_file):
         cfg = spopdyn.libpssa_config.libpSSA_config(sbml_file, name+"/", sbml.species,
                                                     dt=0.1, tend=100, n=1,
-                                                    spatial=spatial, gridpoints=10, K=5000*100)
+                                                    spatial=spatial, gridpoints=GRIDPOINTS, K=1000*GRIDPOINTS**2)
         with open(config_file,"w") as f:
             f.write(cfg)
             logger.info("config file saved as {}.".format(config_file))
@@ -55,7 +71,7 @@ if __name__ == "__main__":
     if not os.path.exists(name+"/libpssa.log"):
         logger.info("Running pSSAlib...")
         try:
-            re = subprocess.check_output(("/home/guilhem/tools/libpssa-1.0.0RC/pssa_cli/pssa -c {}"
+            re = subprocess.check_output(("/home/guilhem/shift/libpssa/pssa_cli/pssa -c {}"
                                          ).format(config_file), shell=True)
         except Exception as e:
             logger.error(e)
@@ -83,7 +99,7 @@ if __name__ == "__main__":
 
     elif not spatial and not os.path.exists(data_file):
         spopdyn.extract.data_extract_single("{}/PDM/PSSA_trajectory_0_0.txt".format(name))
-            
+    
 
     
 
