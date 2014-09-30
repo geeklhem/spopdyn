@@ -1,3 +1,4 @@
+from __future__ import division
 import logging
 import subprocess
 import os 
@@ -5,6 +6,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
+from mpl_toolkits.axes_grid1 import host_subplot
+import mpl_toolkits.axisartist as AA
 
 
 logger = logging.getLogger("spopdyn")
@@ -22,7 +25,7 @@ def exp_summary(habitat,temperature,species):
                aspect="equal")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.title("Habitat quality")
+    plt.title("Habitat")
     plt.colorbar(fraction=0.05)
     plt.subplot(2,2,4)
     plt.imshow(temperature,
@@ -63,13 +66,18 @@ def niches(species,gp=25):
                extent=(0,1,1,0),
                aspect="equal",)
     ax = plt.gca()
-    for sp in species:
+
+    for i,sp in enumerate(species):
         ellipse = Ellipse(xy=(sp[0], sp[1]), width=sp[2], height=sp[3], 
                           edgecolor='k',alpha=0.1, fc='None', lw=1,angle=sp[4]*360)
         ax.add_patch(ellipse)
-
+        #plt.annotate("$SP{}$".format(i),(sp[0],sp[1]),size=10)
+    plt.scatter(species[:,0],species[:,1])
+    plt.xlim((0,1))
+    plt.ylim((0,1))
+    
     plt.xlabel("Temperature")
-    plt.ylabel("Habitat quality")
+    plt.ylabel("Habitat")
     plt.title("Ecological niches")
 
 
@@ -115,5 +123,90 @@ def matrix_movie(matrices,titles,maxvalues,path):
     if not os.path.exists("{0}video.mp4".format(path)):
         subprocess.call("avconv -y -r 3 -i {0}%05d.png {0}video.mp4".format(path), shell=True)
     subprocess.call("mplayer {}video.mp4  -idle -fixed-vo".format(path), shell=True)
+
+
+def experimental_report(environment, species, time_series, path):
+    """
+    Save a report of the experiment as an eps file.
+
+    Input:
+        environment (list of tuple): list of environmental variable (name, value matrix),
+
+    """
+
+
+    M = len(environment)+1
+    L = int(np.ceil(1 + len(time_series)/2))
+    fig = plt.figure(figsize=(5*M,5*L))
+    
+    colormaps = ["Greens","bwr","Blues","Oranges","RdPu","Reds"]
+    for i,(k,v) in enumerate(environment):
+        plt.subplot(L,M,i+1)
+        plt.imshow(v,
+                   interpolation='None',
+                   cmap=colormaps[i%len(colormaps)],
+                   vmin=0,vmax=1,
+                   aspect="equal")
+        plt.xticks([])
+        plt.yticks([])
+        plt.title(k)
+        plt.colorbar(orientation="horizontal", fraction=0.045)
+    plt.subplot(L,M,M)
+    niches(species)
+
+    colors = ["blue","green","orange","pink","red"]
+    host = [host_subplot(L*100+10+2+j, axes_class=AA.Axes) for j in range(L-1)]
+
+
+    for i,(k,v) in enumerate(time_series):
+        if i%2 != 0:
+            ax = host[int(i/2)].twinx()
+        else:
+            ax = host[int(i/2)]
+            
+        ax.set_ylabel(k)
+        if len(v) == 2:
+            ax.plot(v[0],
+                    label=k,
+                    color=colors[i%len(colors)] )
+            ax.fill_between(range(len(v[0])),
+                              v[0]-v[1], v[0]+v[1],
+                              alpha=0.3,
+                              color=colors[i%len(colors)])
+        else:
+            T = len(v)
+            ax.plot(range(len(v)),v, color=colors[i%len(colors)], label=k)
+            
+    for h in host:
+        h.set_xlim((0,T-1))
+        h.legend()
+        h.set_xlabel("Time")
+
+    #plt.tight_layout()
+    plt.savefig("{}/experimental_report.pdf".format(path),pad_inches=0)
+    plt.clf() 
+
+if __name__ == "__main__":
+    t_s = [
+           ("Richness",  np.random.uniform(size=10)),
+           ("Diversity", (np.random.uniform(size=10) , np.random.uniform(size=10)*0.1) ),
+           ("CTI",  np.random.uniform(size=10)),
+           ("CSI",  np.random.uniform(size=10)),
+    ("Biomass", np.random.uniform(size=10)),]
+    
+    e = [("Habitat", np.random.uniform(0,1,size=(25,25))),
+         ("Temperature", np.random.uniform(0,1,size=(25,25)))]
+
+    s = np.random.uniform(0,1,size=(1,5))
+    s[:,-1] = 0
+
+    experimental_report(e,s,t_s,".")
+    #subprocess.call("evince experimental_report.eps",shell=True)
+
+
+
+
+
+
 
 
