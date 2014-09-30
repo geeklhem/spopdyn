@@ -19,10 +19,12 @@ def data_extract_single(fi):
     plt.show()
     plt.clf()
 
-def data_extract_2D(fi,n):
+def data_extract_2D(fi,n,param):
     biomass = []
     nbspecies = []
     diversity = []
+    CSI = []
+    CTI = []
     t = -1
 
     # remove empty lines
@@ -52,8 +54,16 @@ def data_extract_2D(fi,n):
                 diversity.append(np.zeros((gridpoints,gridpoints),
                                           dtype=float))
 
+                CSI.append(np.zeros((gridpoints,gridpoints),
+                                          dtype=float))
+                CTI.append(np.zeros((gridpoints,gridpoints),
+                                          dtype=float))
+
+
                 for j,ab_by_sp in enumerate(loc):
                     ab_by_sp = np.fromstring(ab_by_sp,sep=",",dtype=int)
+                    CSI[-1].flat[j] = np.sum(ab_by_sp * param[:,1])
+                    CTI[-1].flat[j] = np.sum(ab_by_sp * param[:,2])
                     ab_by_sp = ab_by_sp[ab_by_sp.nonzero()]
 
                     biomass[-1].flat[j] = ab_by_sp.sum()
@@ -61,7 +71,8 @@ def data_extract_2D(fi,n):
 
                     pi = ab_by_sp/ab_by_sp.sum()
                     diversity[-1].flat[j] = -np.sum( pi * np.log(pi))
-
-    return biomass,nbspecies,diversity
+                CSI[-1] /= biomass[-1]
+                CTI[-1] /= biomass[-1]
+    return biomass,nbspecies,diversity,CSI,CTI
 
 

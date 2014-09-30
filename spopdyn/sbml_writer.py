@@ -5,6 +5,8 @@ import libsbml
 import numpy as np
 import scipy.stats as st
 
+import spopdyn.landscape
+
 logger = logging.getLogger("spopdyn")
 
 class SBMLwriter(object):
@@ -69,8 +71,8 @@ class CompetitiveLV(SBMLwriter):
 
         
         self.n = n    
-        param = np.random.random((n,5))
-        param[:,2:5] /= 3
+        param = np.random.uniform(0,1,size=(n,5))
+        #param[:,2:5] /= 3
         self.param = param 
         r = []
         
@@ -78,7 +80,7 @@ class CompetitiveLV(SBMLwriter):
         self.name = "Competitive Lotka Volterra with {} species".format(self.n)
         SBMLwriter.__init__(self)
 
-        self.temperature, self.habitat = create_environment(gridpoints)
+        self.habitat,self.temperature = create_environment(gridpoints)
         
         # Turn alpha into a matrix:
         if type(alpha) == int or type(alpha)== float :
@@ -198,15 +200,17 @@ class CompetitiveLV(SBMLwriter):
         return model 
 
 
-def create_environment(gridpoints):
+def create_environment(gridpoints,alpha=2,temperature=.5):
     """
     Args: 
-        gridpoints (int): number of gridpoints
+        gridpoints (int): number of gridpoints.
+        temperature (float): uniform temperature value.
+        alpha (float): autocorrelation parameter for habitat.
     Returns:
        (tuple) two gridpoints^2 matrix: environment and temperature.
     """
-    temperature = np.random.uniform(size=(gridpoints,gridpoints))
-    habitat = np.random.uniform(size=(gridpoints,gridpoints))
+    temperature = np.zeros((gridpoints,gridpoints)) + temperature
+    habitat = spopdyn.landscape.seq_gaussian(size=gridpoints,alpha=alpha,rmax=1)[0]
     return habitat,temperature
 
     
@@ -218,5 +222,5 @@ def growth_rate(temperature,habitat,muH,sH,muT,sT,rho):
         rate[x] = st.multivariate_normal.pdf((habitat.flat[x],temperature.flat[x]),
                                              [muH,muT],
                                              cov)
-        rate[x] = max(rate[x],1e-300)
+        rate[x] = min(max(rate[x],1e-200),1e300)
     return rate

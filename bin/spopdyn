@@ -35,7 +35,9 @@ if __name__ == "__main__":
         SPECIES = int(sys.argv[2])
     if len(sys.argv)>3:
         GRIDPOINTS = int(sys.argv[3])
-    
+    if len(sys.argv)>4:
+        ALPHA= float(sys.argv[4])
+        
     spatial = True 
     name = sys.argv[1]
 
@@ -50,18 +52,22 @@ if __name__ == "__main__":
     data_file = name+"/data.pkle"
     
     if not os.path.exists(sbml_file):
-        sbml = spopdyn.sbml_writer.CompetitiveLV(SPECIES,1,1,100,GRIDPOINTS)
+        sbml = spopdyn.sbml_writer.CompetitiveLV(SPECIES,1,ALPHA,20,GRIDPOINTS)
         sbml.save(sbml_file)
         
-        spopdyn.display.exp_summary(sbml.habitat,sbml.temperature,sbml.param)
-        plt.tight_layout()
-        plt.savefig(name+"/summary.png",pad_inches=0)
-        plt.clf()
-
         logger.info("SBML file for model '{}' saved as {}.".format(sbml,sbml_file))
-
+        with open(name+"/species.pkle",'w') as f:
+                pickle.dump((sbml.species,sbml.param,sbml.habitat,sbml.temperature),f)
+                species = sbml.species
+                param = sbml.param
+                habitat = sbml.habitat
+                temperature = sbml.temperature
+    else:
+        with open(name+"/species.pkle",'r') as f:
+            species, param, habitat, temperature = pickle.load(f)
+        
     if not os.path.exists(config_file):
-        cfg = spopdyn.libpssa_config.libpSSA_config(sbml_file, name+"/", sbml.species,
+        cfg = spopdyn.libpssa_config.libpSSA_config(sbml_file, name+"/", species,
                                                     dt=0.1, tend=100, n=1,
                                                     spatial=spatial, gridpoints=GRIDPOINTS, K=1000*GRIDPOINTS**2)
         with open(config_file,"w") as f:
@@ -82,7 +88,7 @@ if __name__ == "__main__":
     logger.info("Data extraction...")
     if spatial:
         if not os.path.exists(data_file):
-            data = spopdyn.extract.data_extract_2D("{}/PDM/PSSA_trajectory_0_0.txt".format(name),50)
+            data = spopdyn.extract.data_extract_2D("{}/PDM/PSSA_trajectory_0_0.txt".format(name),50,param)
             with open(data_file,"w") as f:
                 logger.info("Saving data as {}.".format(data_file))
                 pickle.dump(data,f)
@@ -93,9 +99,15 @@ if __name__ == "__main__":
                 data = pickle.load(f)
 
         spopdyn.display.matrix_movie(data,
-                                     ("Biomass","Species Richness","Diversity"),
-                                     (5000,10,10),
+                                     ("Biomass","Species Richness","Diversity","CSI","CTI"),
+                                     (1000,SPECIES,SPECIES,1,1),
                                      name+"/")
+
+        spopdyn.display.exp_summary(habitat,temperature,param)
+        plt.tight_layout()
+        plt.savefig(name+"/summary.png",pad_inches=0)
+        plt.clf()
+
 
     elif not spatial and not os.path.exists(data_file):
         spopdyn.extract.data_extract_single("{}/PDM/PSSA_trajectory_0_0.txt".format(name))

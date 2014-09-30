@@ -74,17 +74,19 @@ def niches(species,gp=25):
 
 
 def matrix_movie(matrices,titles,maxvalues,path):
-    cmap_list = ["Blues","Greens","Oranges"]
-    colors = ["blue","green","orange"]
+    cmap_list = ["Blues","Greens","Oranges","RdPu","Reds"]
+    colors = ["blue","green","orange","pink","red"]
     logger.info("Images...")
     Tmax = len(matrices[0])
     n = len(matrices)
     means = np.zeros((n,Tmax))
     var =  np.zeros((n,Tmax))
-
+    
+    
     for t in range(Tmax):
         print "{}/{} {}[A".format(t,Tmax,chr(27))
         if not os.path.exists("{}{:05}.png".format(path,t)):
+            fig = plt.figure(figsize=(15,5))
             for m,(matrix,title,mx) in enumerate(zip(matrices,titles,maxvalues)):
                 plt.subplot(2,n,m+1)
                 plt.imshow(matrix[t], aspect="equal",
@@ -94,12 +96,15 @@ def matrix_movie(matrices,titles,maxvalues,path):
                 plt.colorbar(fraction=0.05)
                 plt.title("{}".format(title))
 
-                plt.subplot(2,n,n+m+1)
-                means[m,t] = matrix[t].mean()
-                var[m,t] = matrix[t].var()
-                plt.plot(means[m,:t],color=colors[m])
-                plt.plot(var[m,:t],"-.",color=colors[m])
+                plt.subplot(3,n,n+m+1)
                 plt.title("{}".format(title))
+                means[m,t] = matrix[t].mean()
+                plt.plot(means[m,:t],color=colors[m])
+                plt.xlim(0,Tmax)
+                
+                plt.subplot(3,n,n+2*m+1)
+                var[m,t] = matrix[t].var()
+                plt.plot(var[m,:t],"-.",color=colors[m])
                 plt.xlim(0,Tmax)
 
             plt.tight_layout()
