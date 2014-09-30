@@ -76,3 +76,18 @@ def data_extract_2D(fi,n,param):
     return biomass,nbspecies,diversity,CSI,CTI
 
 
+def time_serie(martices):
+    """
+    Arg:
+        matrices (list): list of matrices.
+    Return:
+        (tuple of np.array): mean and spatial variance time series   
+    """
+    T = len(matrices)
+    mean = np.zeros(T)
+    var = np.zeros(T)
+    for i,M in enumerate(matrices):
+        mean[i] = np.mean(M)
+        var[i] = np.var(M)
+    return (mean,var)
+
