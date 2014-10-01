@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" metaid="metaid_0000001" version="4">
+<annotation>
+	<rdf:RDF xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#">
+	<rdf:Description rdf:about="#metaid_0000002">
+	<dcterms:created rdf:parseType="Resource">
+	<dcterms:W3CDTF>2011-05-28T00:16:47+01:00</dcterms:W3CDTF>
+	</dcterms:created>
+	<dcterms:modified rdf:parseType="Resource">
+	<dcterms:W3CDTF>2011-05-28T00:22:11+01:00</dcterms:W3CDTF>
+	</dcterms:modified>
+	</rdf:Description>
+	</rdf:RDF>
+</annotation>
+  <model id="model01" metaid="metaid_0000002" name="model">
+<listOfUnitDefinitions>
+	<unitDefinition id='rate' name='rate'>
+		<listOfUnits>
+			<unit kind='second' exponent='-1'/>
+		</listOfUnits>
+	</unitDefinition>
+	<unitDefinition id='density' name='density'>
+		<listOfUnits>
+			<unit kind='metre' exponent='-3'/>
+		</listOfUnits>
+	</unitDefinition>
+</listOfUnitDefinitions>
+<listOfCompartments>
+	<compartment id="compartment_0000001" name="default" size="1" units="volume"/>
+</listOfCompartments>
+<listOfSpecies>
+	<species compartment="compartment_0000001" id="species_0000001" initialAmount="0" constant="false" name="S1"/>
+	<species compartment="compartment_0000001" id="species_0000002" initialAmount="0" constant="false" name="S2"/>
+<annotation>
+	<libpSSA:diffusion xmlns:libpSSA="uri">
+		<libpSSA:dS1 libpSSA:diffusion="2000000000"/>
+		<libpSSA:dS2 libpSSA:diffusion="1000000000"/>
+	</libpSSA:diffusion>
+</annotation>
+</listOfSpecies>
+<listOfParameters>
+	<parameter id="F" name="F" units="dimensionless" value="0.040"/>
+	<parameter id="k" name="k" units="dimensionless" value="0.060"/>
+	<parameter id="k_one" name="k_one" units="rate" value="1.0"/>
+	<parameter id="u" name="u" units="density" value="1e7"/>
+</listOfParameters>
+<listOfReactions>
+	<reaction id="reaction_0000001" reversible="false">
+		<listOfProducts>
+			<speciesReference name="S1" species="species_0000001" stoichiometry="1"/>
+		</listOfProducts>
+		<kineticLaw>
+			<math xmlns="http://www.w3.org/1998/Math/MathML">
+				<apply>
+				<times/>
+					<ci>F</ci>
+					<ci>k_one</ci>
+					<apply>
+						<power/><ci>u</ci><cn>3</cn>
+					</apply>
+				</apply>
+			</math>
+		</kineticLaw>
+	</reaction>
+	<reaction id="reaction_0000002" reversible="false">
+		<listOfReactants>
+			<speciesReference name="S1" species="species_0000001" stoichiometry="1"/>
+		</listOfReactants>
+		<kineticLaw>
+			<math xmlns="http://www.w3.org/1998/Math/MathML">
+				<apply>
+				<times/>
+					<ci>F</ci>
+					<ci>k_one</ci>
+					<apply>
+						<power/><ci>u</ci><cn>2</cn>
+					</apply>
+				</apply>
+			</math>
+		</kineticLaw>
+	</reaction>
+
+	<reaction id="reaction_0000003" reversible="false">
+		<listOfReactants>
+			<speciesReference name="S1" species="species_0000001" stoichiometry="1"/>
+			<speciesReference name="S2" species="species_0000002" stoichiometry="2"/>
+		</listOfReactants>
+		<listOfProducts>
+			<speciesReference name="S2" species="species_0000002" stoichiometry="3"/>
+		</listOfProducts>
+		<kineticLaw>
+			<math xmlns="http://www.w3.org/1998/Math/MathML">
+				<apply>
+					<times/>
+					<ci>k_one</ci>
+					<cn>1.0</cn>
+				</apply>
+			</math>
+		</kineticLaw>
+	</reaction>
+	<reaction id="reaction_0000004" reversible="false">
+		<listOfReactants>
+			<speciesReference name="S2" species="species_0000002" stoichiometry="1"/>
+		</listOfReactants>
+		<kineticLaw>
+			<math xmlns="http://www.w3.org/1998/Math/MathML">
+					<apply>
+						<times/>
+						<apply>
+						  <plus/>
+						    <ci>k</ci>
+						    <ci>F</ci>
+						</apply>
+						<ci>k_one</ci>
+						<apply>
+							<power/><ci>u</ci><cn>2</cn>
+						</apply>
+					</apply>
+			</math>
+		</kineticLaw>
+	</reaction>
+</listOfReactions>
+</model>
+</sbml>

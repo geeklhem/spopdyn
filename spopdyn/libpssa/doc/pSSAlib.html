@@ -1,0 +1,840 @@
+<html>
+  <head>
+    <title>pSSAlib</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Hello SyntaxHighlighter</title>
+	<script type="text/javascript" src="scripts/shCore.js"></script>
+	<script type="text/javascript" src="scripts/shBrushCpp.js"></script>
+	<script type="text/javascript" src="scripts/shBrushXml.js"></script>
+	<link type="text/css" rel="stylesheet" href="styles/shCoreDefault.css"/>
+	<script type="text/javascript">SyntaxHighlighter.all();</script>
+    <style></style>
+  </head>
+  <body>
+<h2>pSSAlib</h2>
+
+  This C++ library implements the MOSAIC partial-propensity algorithms for exact
+  stochastic simulations of chemical reaction networks. The implemented
+  algorithms are described in:
+
+<p>Rajesh Ramaswamy, Nelido Gonzalez-Segredo, and Ivo F. Sbalzarini. A new class of highly efficient exact stochastic simulation algorithms
+for chemical reaction networks. <em>THE JOURNAL OF CHEMICAL PHYSICS</em>,  130,
+244104 (2009) (<a href="Ramaswamy2009.pdf" target="_blank">PDF</a>)</p>
+
+<p>Rajesh Ramaswamy, and Ivo F. Sbalzarini. A partial-propensity variant of the composition-rejection stochastic
+simulation algorithm for chemical reaction networks. <em>THE JOURNAL OF CHEMICAL
+PHYSICS</em> 132, 044102 (2010) (<a href="Ramaswamy2010.pdf" target="_blank">PDF</a>)</p>
+
+<p>Rajesh Ramaswamy, and Ivo F. Sbalzarini. A partial-propensity formulation of the stochastic simulation algorithm
+for chemical reaction networks with delays. <em>THE JOURNAL OF CHEMICAL PHYSICS </em> 134, 014106 (2011) (<a href="Ramaswamy2011.pdf" target="_blank">PDF</a>)</p>
+
+<p>Rajesh Ramaswamy and Ivo F. Sbalzarini. Exact on-lattice stochastic reaction-diffusion simulations using
+
+partial-propensity methods. <em>THE JOURNAL OF CHEMICAL PHYSICS</em>, 135, 244103 (2011) (<a href="Ramaswamy2011c.pdf" target="_blank">PDF</a>)</p>
+
+<h2>Installation</h2>
+
+<h3>Presequisites</h3>
+
+
+g++, libSBML, gsl, boost, libxml2 (for SBML).<br>
+In order to prepare the installation of libSBML you can easily install all
+needed package with the following command:<br>
+<br>
+<strong>Fedora/Red Hat</strong>: yum install gcc-g++,gsl-devel,boost,boost-devel,libxml2-devel<br>
+<strong>Ubuntu</strong>: apt-get install gcc-g++,gsl-devel,boost,boost-devel,libxml2-devel<br>
+<strong>MacOS X</strong>: sudo port install g++,gsl,boost,libxml2<br>
+<br>
+SBML does not require particular compilation option, so a straightfoward compilation or binary installation should be enough
+<br>
+
+The pSSAlib library has a configure script. It has been tested on Linux and
+MacOS X. In order to compile the library, type:<br>
+
+<br>
+<strong>./configure<br>
+make</strong><br>
+<br>
+
+and, optionaly:<br>
+<br>
+<strong>make install</strong><br>
+<br>
+The build system creates the following components:<br>
+
+<br>
+<table>
+  <tbody>
+      <tr>
+<td><strong>Component</strong></td>
+<td><strong>Location</strong></td>
+      </tr>
+      <tr>
+<td>library</td>
+<td>libpssa</td>
+      </tr>
+      <tr>
+<td>examples</td>                       
+<td>examples</td>
+      </tr>
+<tr>
+<td style="padding-right:30px">Command line interface</td><td>pssa_cli</td>
+</tr>
+<tr>
+<td>test</td><td>pssa_test</td>
+</tr>
+  </tbody>
+</table>
+
+<h2>Algorithm and Interface</h2>
+
+The algorithm requires the following inputs and produces the following outputs<br>
+
+<br>
+<table>
+  <tbody>
+    <tr>
+      <td><h3>Inputs</h3></td>
+      <td><h3>Outputs</h3></td>
+    </tr>
+    <tr>
+      <td style="padding-right:30px"><strong>Reaction Network (SBML file format)</strong></td>
+      <td><strong>Species population (VTK or text format)</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Client (C++ code / config file)</strong></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+
+<strong>Reaction Network (SBML file format):</strong> The SBML file that defines
+ the reaction network to be simulated and specifies all rate constants and, for
+ spatiotemporal models, also all diffusion constants.<br>
+<strong>Species population (VTK or text format):</strong> Time evolution of the
+molecular populations of all species in the network. Two formats are supported:
+VTK or simple ASCII text<br>
+
+
+<h2>Step by step tutorial (C++ Client)</h2>
+<h3>Gray Scott example</h3>
+<br>
+
+
+<table>
+  <tr>
+    <td>
+      <IMG src="images/grays.jpg" width="293" height="236" align="left" border="0">
+    </td>
+    <td>
+This example can be founded in the folder examples/Gray_Scott_2D and is
+automaticaly compiled by the make command during
+the installation process. This example shows how to use the library to simulate
+a Gray-Scott reaction-diffusion system in 2D using the PSRD algorithm.<br>
+
+It can be shown that this kind of system becomes bistable for particular values of F and k, showing some characteristics patterns.
+
+Below are some videas of simulation results that you get following the examples,
+using different parameters as defined in the 6 SBML files: 
+    </td>
+  </tr>
+</table>
+
+
+
+<table>
+  <tr>
+    <td>
+      <strong>grayscott_alpha.sbml</strong>
+    </td>
+    <td>
+      <strong>grayscott_sp.sbml</strong>
+    </td>
+    <td>
+      <strong>grayscott_mv.sbml</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>grayscott_alpha7.sbml</strong>
+    </td>
+    <td>
+      <strong>grayscott_sp7.sbml</strong>
+    </td>
+    <td>
+      <strong>grayscott_mv7.sbml</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+	<video width="384" height="384" controls="controls" autoplay="autoplay" loop="loop">
+	<source src="images/grayscott_alpha.mp4"></source>
+	<source type="video/mp4" src="images/grayscott_alpha.mp4"></source>
+	<source type="video/webm" src="images/grayscott_alpha.webm"></source>
+	<source type="video/ogg" src="images/grayscott_alpha.ogv"></source>
+	</video>
+    </td>
+    <td>
+	<video width="384" height="384" controls="controls" autoplay="autoplay" loop="loop">
+	<source src="images/grayscott_selfsplit.mp4"></source>
+	<source type="video/mp4" src="images/grayscott_selfsplit.mp4"></source>
+	<source type="video/webm" src="images/grayscott_selfsplit.webm"></source>
+	<source type="video/ogg" src="images/grayscott_selfsplit.ogv"></source>
+	</video>
+    </td>
+    <td>
+	<video width="384" height="384" controls="controls" autoplay="autoplay" loop="loop">
+	<source src="images/grayscott_mv.mp4"></source>
+	<source type="video/mp4" src="images/grayscott_mv.mp4"></source>
+	<source type="video/webm" src="images/grayscott_mv.webm"></source>
+	<source type="video/ogg" src="images/grayscott_mv.ogv"></source>
+	</video>
+    </td>
+   </tr>
+  <tr>
+    <td>
+	<video width="384" height="384" controls="controls" autoplay="autoplay" loop="loop">
+	<source src="images/grayscott_alpha7.mp4"></source>
+	<source type="video/mp4" src="images/grayscott_alpha7.mp4"></source>
+	<source type="video/webm" src="images/grayscott_alpha7.webm"></source>
+	<source type="video/ogg" src="images/grayscott_alpha7.ogv"></source>
+	</video>
+    </td>
+    <td>
+	<video width="384" height="384" controls="controls" autoplay="autoplay" loop="loop">
+	<source src="images/grayscott_selfsplit.mp4"></source>
+	<source type="video/mp4" src="images/grayscott_selfsplit7.mp4"></source>
+	<source type="video/webm" src="images/grayscott_selfsplit7.webm"></source>
+	<source type="video/ogg" src="images/grayscott_selfsplit7.ogv"></source>
+	</video>
+    </td>
+    <td>
+	<video width="384" height="384" controls="controls" autoplay="autoplay" loop="loop">
+	<source src="images/grayscott_mv7.mp4"></source>
+	<source type="video/mp4" src="images/grayscott_mv7.mp4"></source>
+	<source type="video/webm" src="images/grayscott_mv7.webm"></source>
+	<source type="video/ogg" src="images/grayscott_mv7.ogv"></source>
+	</video>
+    </td>
+   </tr>
+</table>
+   
+
+
+
+<br>
+<h3>First Run</h3>
+
+To run the examples type ./grayscott_ms ./grayscott_sp ./grayscott_alpha ./grayscott_ms7 ./grayscott_sp7 ./grayscott_alpha7 on a terminal
+
+These examples read the corresponding SBML file located in the sbml folder.
+
+During the simulation in the terminal, you should see the progress
+
+<br>
+<br>
+<div style="min-width:100%; float:left;margin:10px;">
+<IMG src="images/gray_scott_term.jpg" width="706" height="276" align="left" border="0">
+</div>
+<br>
+<br>
+First, all chemical reactions within each subvolume are listed, followed by all
+diffusion reactions between subvolumes.
+The coefficients in brackets are the specific probability rates of the reactions (c_mu in the papers).
+All output can be founded in the folder out/ after the simulations complete and
+can be visualized using, e.g., ParaView.
+
+To do so, choose the VTK file in the out/ folder using the ParaView menu File->Open
+
+<div style="min-width:100%; float:left;margin:10px;">
+<IMG src="images/paraview1.jpg" width="715" height="236" align="left" border="0">
+</div>
+
+<br>
+then click "Apply" to visualize the result
+
+<div style="min-width:100%; float:left;margin:10px;">
+<IMG src="images/paraview2.jpg" width="308" height="186" align="left" border="0">
+</div>
+
+<br>
+The arrow controls can be used to visualize the time-evolution of the simulated
+population fields:
+
+<div style="min-width:100%; float:left;margin:10px;">
+<IMG src="images/paraview3.jpg" width="372" height="38" align="left" border="0">
+</div>
+
+<h2>Inputs</h2>
+
+In order to run a simulation, you need a SBML file and a simulation client
+(either a C++ program using the library, or the command-line tool that comes
+with the library + configuration file).
+
+Let's start with the SBML file. It is a common step for all types of clients. We
+report here the most important parts in order to explain how to specify
+reactions in SBML. SBML is an open XML standard for specifying (bio)chemical
+reaction networks. 
+You can refer to the SBML files given with the examples if you want take a look
+at some example files, or see the SBML online documentation <a href="http://sbml.org/Main_Page">here</a>,
+if you want a complete explanation of the SBML file format. There are also
+various other software tools that help you create, write, edit, or visualize
+SBML files. 
+
+<h3>SBML<h3>
+
+<div style="min-width:100%; float:left;margin:10px;">
+<IMG src="images/xml.jpg" width="943" height="726" align="left" border="0">
+</div>
+<br>
+<table>
+  <tr>
+    <td width="100" valign=top>
+      <strong>lines 7-8</strong>
+    </td>
+    <td>
+      We define the species. The property "initial amount" is not used when you
+	  use a "user defined" distribution. Constant="false" means that this specie
+	  does not act as a source (required by the SBML standard, but internally
+	  ignored). We will see later how to specify a sink or a source.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>lines 11-12</strong>
+    </td>
+    <td>
+      We specify diffusion constant for each species. The matching is done by
+	  the "name" property: If you have a species named S1, the library searches
+	  for a "libpssa:dS1" tag with the corresponding diffusion constant.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>lines 17-22</strong>
+    </td>
+    <td>
+      List of parameters that can be used in Math formulas. In this case, we
+	  define the parameters of the Gray-Scott system.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>lines 24-41</strong>
+    </td>
+    <td>
+      <IMG src="images/reaction.jpg" width="800" height="359" align="left" border="0">
+      We define the reactions. Each reaction has an ID, which is a name that
+	  uniquely identifies the reaction. <strong>Reversible</strong>=false means
+	  that the reaction can happen only in one direction. Then, the list of
+	  reactants and product has to be specified with their stoichiometry
+	  coefficients. The <strong>species</strong> properties and names refer to
+	  the names defined in the tag <strong>&ltListOfSpecies&gt</strong>.
+      The PSSAlib currently supports five mathematical operations:
+	  <strong>/times, /add, /minus, /divide, and /power<strong>.
+    </td>
+  </tr>
+</table>
+
+<h3> Supported reactions </h3>
+<div style="min-width:100%; float:left;margin:10px;">
+<IMG src="images/reaction_s.jpg" width="506" height="88" align="left" border="0">
+</div>
+<br>
+Partial-propensity methods support elementary reactions. These are
+reactions with 2 or less reactant molecules involved. 
+In addition, non-elementary reactions are supported if the reaction has at most
+two reactant species, where one of them has a stoichiometry coefficent of one.
+<br>
+<h3> C++ Client </h3>
+
+We show how to implement a small C++ client that uses the PSSAlib library, This
+illustrates the main steps involved in programming one's own simulation. The
+code is fully commented and should be straightforward to read:
+
+<h4>main.cpp</h4>
+
+<pre class="brush: cpp;">
+
+pssalib::datamodel::SimulationInfo simInfo;
+
+int main(int argc, char** argv)
+{
+	std::cout << "Running Gray Scott 2D example ... " << std::endl;
+	
+	std::string inputFile = "sbml/grayscott.sbml";
+	if (!simInfo.readSBMLFile(inputFile))
+	{// Error}
+
+	...
+	
+	// Boundary condition periodic
+	
+	simInfo.eBoundaryConditions = pssalib::datamodel::SimulationInfo::BC_Periodic;
+	
+	// 2D Homogeneous space
+	
+	simInfo.eVolumeType = pssalib::datamodel::SimulationInfo::VT_Homogeneous2d;
+	
+	// Volume
+	
+	simInfo.dOmega = H*H*N*N;
+	
+	// number of points in the grid (one side)
+	
+	simInfo.unNumGridPoints = N;
+	
+	// User defined concentration, and call-back
+	
+	simInfo.eInitialPop = pssalib::datamodel::SimulationInfo::IP_UserDefined;
+	simInfo.eInitialUserDefined = init_callback;
+	
+	// Starting time
+	
+	simInfo.dTimeStart = 0.0;
+	
+	// Time step between two configuration save
+	
+	simInfo.dTimeStep = 2000/U/U/1000;
+	
+	// End time of simulation
+	
+	simIn<IMG src="images/uc_data.jpg" width="196" height="288" align="left" border="0">fo.dTimeEnd = 2000/U/U;
+	
+	// output location
+	
+	simInfo.strOutput = "out";
+	simInfo.arSamples.push_back(1);
+	
+	// output name sequence
+	
+	simInfo.vtkOutName = "out/gray";
+	
+	// run VTK at the end od the simulation
+	
+	simInfo.vtkVisualize = false;
+
+	
+	// Create an istance of the simulation class
+	
+	pssalib::PSRD *pssa = new pssalib::PSRD();
+
+	// Set up the method to use to SPDM: Sort Partial Propensity Direct Method
+	
+	if(!pssa->setMethod(pssalib::PSRD::M_SPDM))
+	{// Error }
+
+	// Set a callback for each reaction event
+	
+	pssa->SetReactionCallback(&reaction_callback_wrapper, NULL);
+	
+	// Set a callback for each 
+	
+	pssa->SetProgressCallback(&progress_callback, NULL);
+
+	// Run the simulation
+	
+	bool result = pssa->run_avg(&simInfo);
+	
+	return 0;
+}
+
+void init_callback(pssalib::datamodel::DataModel::SubvolumesInit * sb)
+{
+	int start_sp1 = 0;
+	int start_sp2 = 0;
+	
+	// Set initial population
+  
+	// Gray Scott simulation require two species + 1 (source/sink)
+	
+	if ( simInfo.getNumSpecies() != 2 + 1 )
+		throw "init_callback: Error Gray Scott example work with only two species";
+	
+	// For each subvolume
+	
+	for (int i = 0 ; i < sb->getNumSub() ; i++)
+	{
+		...
+		
+		// Set population for species 1,2 subvolumes i to start_sp1 and start_sp2
+
+		sb->setInit(i,1,start_sp1);
+		sb->setInit(i,2,start_sp2);
+	}
+}
+
+void reaction_callback_wrapper(pssalib::datamodel::DataModel* dm, REAL t, void* user)
+{
+	// do nothing
+}
+
+int total_frame = 0;
+
+void progress_callback(UNSIGNED_INTEGER a, UNSIGNED_INTEGER b, void* user)
+{
+	// display progress
+  
+	std::cout << "\rProgress: " << a << "/" << b << " frame ( " << total_frame << " )" << std::flush;
+	total_frame++;
+}
+
+</pre>
+
+<table>
+  <tbody>
+    <tr>
+      <td><strong>line 1<strong></td>
+      <td>Simulation structure that stores all information about the simulation</td>
+    </tr>
+    <tr>
+      <td><strong>lines 11-59<strong></td>
+      <td>Initialize the simulation structure with all data needed for the
+		  simulation; the reference of the structure can be found <a
+			  href="manual_reference/html/classpssalib_1_1datamodel_1_1SimulationInfo.html#a8bbc1cc8983161c590b90949f57a14ea">here</a>.
+		  At the least, all Public attributes marked with [IN MANDATORY] have to be filled</td>
+    </tr>
+    <tr>
+      <td><strong>line 64<strong></td>
+      <td>Creating an instance of the simulation engine. Here: PSRD for
+		  stochastic reaction-diffusion. </td>
+    </tr>
+    <tr>
+      <td><strong>line 68<strong></td>
+      <td>Defining the simulation algorithm to use within each subvolume (M_SPDM = Sorting Partial
+		  Propensity Direct Method). For a complete list of implmented
+		  simulation algorithms, see 
+      <a
+		  href="manual_reference/html/classpssalib_1_1PSSA.html#a603e640327cf29a74f1105b499039158">here</a>.</td>
+    </tr>
+    <tr>
+      <td><strong>lines 73-77<strong></td>
+      <td>Setting up a callback for each reaction event and for each trajectory.
+		  In this example these callbacks are used to write result files.</td>
+    </tr>
+    <tr>
+      <td><strong>line 81<strong></td>
+      <td>Run the simulation; see the <a
+			  href="manual_reference/html/classpssalib_1_1PSSA.html#aa458a0deee17125c9250b17b0b6210b2">function
+			  reference</a>.</td>
+    </tr>
+    <tr>
+      <td><strong>lines 86-109<strong></td>
+      <td>Initializes the population to the initial condition.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3> Command-Line Interface </h3>
+
+To illustrate the command-line interface we use the "heteroreaction"
+reaction-diffusion example.
+The SBML file is similar to that of the Gray-Scott example and is not discussed
+further.
+
+<h4> First Run </h4>
+
+The configHete.cfg configuration file combined with the Heteroreaction.sbml SBML
+file produces a simulation of a Heteroreaction system in 3D space with 8
+subvolumes. Changing the number of the subvolumes in the grid, the diffusion
+process produce a right-shift of the distribution:
+
+<table>
+  <tbody>
+    <tr>
+      <td><strong>2x2x2 = 8 points</strong></td>
+      <td><strong>8x8x8 = 64 points</strong></td>
+      <td><strong>20x20x20 = 8000 points</strong></td>
+    </tr>
+    <tr>
+      <td><IMG src="images/Hete2.jpg" width="420" height="250" align="left" border="0"></td>
+      <td><IMG src="images/Hete8.jpg" width="420" height="250" align="left" border="0"></td>
+      <td><IMG src="images/Hete20.jpg" width="420" height="250" align="left" border="0"></td>
+    </tr>
+  </tbody>
+</table>   
+
+<h4> Setup </h4>
+
+For the command-line tool, the SimInfo and the simulation engine parameters are
+provided in a configuration file or supplied as command-line arguments. The
+table below lists all configuration file keywords with their corresponding
+command-line options and C++ variables in the library. 
+
+<br>
+NOTE: arguments supplied on the command line override the configuration file.<br>
+
+<br>
+<table>
+  <tbody>
+      <tr>
+       <td style="padding-right:30px">
+        <strong>Configuration file keyword</strong>
+       </td>
+       <td style="padding-right:30px">
+        <strong>Command-line argument</strong>
+       </td>
+       <td style="padding-right:30px">
+        <strong>C++ SimInfo parameter</strong>
+       </td>
+      </tr>
+      <tr>
+       <td>
+	output_path
+       </td>
+       <td>
+	--output_path -o
+       </td>
+       <td>
+	SimulationInfo.strOutput
+       </td>
+      </tr>
+      <tr>
+       <td>
+	mode
+       </td>
+       <td>
+	--mode
+       </td>
+       <td>
+	PSRD.run_avg() / PSRD.run_hist()
+       </td>
+      </tr>
+      <tr>
+       <td>
+	methods
+       </td>
+       <td>
+	--methods -m
+       </td>
+       <td>
+	PSRD.setMethod()
+       </td>
+      </tr>
+      <tr>
+       <td>
+	species
+       </td>
+       <td>
+       --species
+       </td>
+       <td>
+       arSpeciesIds
+       </td>
+      </tr>
+      <tr>
+       <td>
+	dt
+       </td>
+       <td>
+	--dt
+       </td>
+       <td>
+        SimulationInfo.dTimeStep
+       </td>
+      </tr>
+      <tr>
+       <td>
+	tstart
+       </td>
+       <td>
+	--tstart
+       </td>
+       <td>
+	SimulationInfo.dTimeStart
+       </td>
+      </tr>
+      <tr>
+       <td>
+	tend
+       </td>
+       <td>
+	--tend
+       </td>
+       <td>
+	SimulationInfo.dTimeEnd
+       </td>
+      </tr>
+      <tr>
+       <td>
+	ntrajectories
+       </td>
+       <td>
+	--ntrajectories
+       </td>
+       <td>
+        SimulationInfo.arSamples
+       </td>
+      </tr>
+      <tr>
+       <td>
+	sbml_file
+       </td>
+       <td>
+	--sbml_file
+       </td>
+       <td>
+	readSBMLFile()
+       </td>
+      </tr>
+      <tr>
+       <td>
+	boundary
+       </td>
+       <td>
+	--boundary
+       </td>
+       <td>
+	SimulationInfo.eBoundaryConditions
+       </td>
+      </tr>
+      <tr>
+       <td>
+	volumetype
+       </td>
+       <td>
+	--volumetype
+       </td>
+       <td>
+         SimulationInfo.eVolumeType
+       </td>
+      </tr>
+      <tr>
+       <td>
+	gridpoints
+       </td>
+       <td>
+	--gridpoints
+       </td>
+       <td>
+	SimulationInfo.unNumGridPoints
+       </td>
+      </tr>
+      <tr>
+       <td>
+	omega
+       </td>
+       <td>
+	--omega
+       </td>
+       <td>
+        SimulationInfo.dOmega
+       </td>
+      </tr>
+      <tr>
+       <td>
+	initialpop
+       </td>
+       <td>
+	--initialpop
+       </td>
+       <td>
+	SimulationInfo.eInitialPop
+       </td>
+      </tr>
+      <tr>
+       <td>
+        verbose
+       </td>
+       <td>
+        --verbose -v
+       </td>
+       <td>
+        SimulationInfo.bVerbose
+       </td>
+      </tr>
+  </tbody>
+</table>
+<br>
+A list of all supported options can be printed out by calling the command-line
+tool with the --help option:<br>
+<strong>
+<br>
+<table style="font-family:Courier;">
+  <tbody>
+    <tr>
+<td><strong>libpssa command line interface</strong><br>
+    <strong>Command-line:<strong><br></td>
+    <tr><td>-c [ --config_file ] arg (=config.cfg)</td>
+                                        <td>Configuration file</td></tr>
+<tr><td><strong>Generic options:</strong></td><td></td></tr>
+<tr><td>-h [ --help ] </td><td>produce help message</td></tr>
+<tr><td>-o [ --output_path ] arg </td><td> Output path</td></tr>
+<tr><td>-i [ --sbml_file ] arg </td><td> SBML input file</td><br>
+<tr><td>-s [ --species ] arg </td><td> Comma-separated list of species ids for 
+                                    which histograms will be computed</td></tr>
+<tr><td>--dt arg (=0.10000000000000001)</td><td>Time interval between outputs</td></tr>
+<tr><td>--tend arg (=1000)</td><td>End time of the simulation</td></tr>
+<tr><td>--tstart arg (=0)</td><td>Time at which to begin outputing
+                                    trajectories</td></tr>
+<tr><td>-n [ --ntrajectories ] arg (=10)</td><td>Comma-separated list of number of
+                                    trajectories to simulate</td></tr>
+<tr><td>--mode arg (=stat)</td><td>Mode of the simulation, can be either 
+                                    "trial" or "stat"</td></tr> 
+<tr><td>-m [ --methods ] arg</td><td>Comma-separated list of simulation method ids:<br>
+                                    0 - Gillespie's Direct Method<br>
+                                    1 - Partial Propensity Direct Method<br>
+                                    2 - PSSA with Composition-Rejection <br>
+                                    Sampling<br>
+                                    3 - Sorting Partial Propensity Direct <br>
+                                    Method<br></td></tr> 
+<tr><td>-b [ --boundary ] arg (=periodic)</td><td>Boundary conditions, can be either <br>
+                                    "periodic" or "reflexive"<br></td></tr>
+<tr><td>--volumetype arg (=single)</td><td>Volume description, can be either:<br>
+                                    "single" - a single subvolume (no diffusion)<br>
+                                    "homogeneous2d" - 2-dimensional homogeneous grid<br>
+                                    "homogeneous3d" - 3-dimensional homogeneous grid<br></td></tr>
+<tr><td>--gridpoints arg (=4)</td><td>Number of grid points along one dimension</td></tr>
+<tr><td>--initialpop arg (=distribute)</td><td>Specifies how the initial population specified in the SBML file is distributed across the volume:<br>
+                                    "distribute" - the population is evenly distributed, i.e. each subvolume gets pop/num_volumes<br>
+                                    "concentrate" - the population is concentrated in the middle cell, i.e. one subvolume gets everything<br>
+                                    "multiply" - the population is multiplied, i.e. each subvolume gets the total population</td></tr>
+<tr><td>-v [ --verbose ]</td><td>If specified, the program will print additional information to cout</td></tr>
+</tbody>
+</table> 
+</strong>
+
+<h4>Heteroreaction configuration file</h4>
+
+Below is the configuration file for the heteroreaction example: 
+
+<div style="min-width:100%; float:left;"><IMG src="images/config.jpg" width="500" height="399" align="left" border="0"></div>
+
+<br>
+
+<h2>MPI</h2>
+
+The PSSAlib simulation library supports parallel computing using MPI on compute
+clusters. This can be used to execute simulations in parallel by sampling
+individual trajectories on different processors. 
+To have this feature enabled you should configure the library with 
+the option --with-mpi.
+
+MPI parallelism is implemented both for the command-line interface as well as
+the C++ library.
+<br>
+<br>
+What changes is only the command to run the simulation in parallel:<br>
+<br>
+<strong>mpirun -np x [pssa_cli or C++ client]</strong> where x is the number of
+parallel processes to be used.<br>
+<br>
+We show the result from generating 8000 samples on 200 processes (40 samples per
+process), and compare with the 1-processor case:<br>
+<br>
+<IMG src="images/HeteMPI_1.jpg" width="640" height="384" align="left" border="0">
+<IMG src="images/HeteMPI_200.jpg" width="640" height="384" align="left" border="0">
+<br><br><br>
+<strong>WARNING</strong>: each process starts an indipendent pseudo-random
+number generator, initialized with the seed:<br>
+<br>
+<strong>seed = truncated_to_64bit[sha1 (time * process id * rank)]</strong>.<br><br>
+ Uncorrelated sampling across all processes can hence not be guaranteed in
+ general. For this, a proper parallel random-number generator, like SPRNG,
+ should be used instead. 
+  </body>
+</html>
+<!-- Comment --> 
