@@ -161,9 +161,11 @@ def experiment(habitat,temperature,species,initial_pop,param):
         #    gr.pop(null_gr)
         sbml = spopdyn.sbml_writer.CompetitiveLV(gr,
                                                  param["d"],
+                                                 param["m"],
                                                  param["alpha"],
                                                  initial_pop,
-                                                 param["gridpts"])
+                                                 param["gridpts"],
+                                             )
         sbml.save(paths["sbml"])
         logger.info("SBML file for model '{}' saved as {}.".format(sbml,
                                                                    paths["sbml"]))

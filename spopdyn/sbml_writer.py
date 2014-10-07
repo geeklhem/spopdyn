@@ -60,11 +60,12 @@ class SBMLwriter(object):
 
 
 class CompetitiveLV(SBMLwriter): 
-    def __init__(self,growth_rate,d,alpha=1,init_pop=1000,gridpoints=10):
+    def __init__(self,growth_rate,d,m,alpha=1,init_pop=1000,gridpoints=10):
         """ Cosntructor
         Args:
             
-            d (array or floar): diffusion constant.
+            d (array or floatt): diffusion constant.
+            m (array or float): long range migration constant.
             alpha (matrix or float): interspecific competition strength.
             init_pop (array or float): initial proportion (with respect
                 to the carrying capacity) of each species.
@@ -82,6 +83,9 @@ class CompetitiveLV(SBMLwriter):
         # Turn d into an array: 
         if type(d) == float or type(d) == int:
             d = np.zeros(self.n) + d
+        if type(m) == float or type(m) == int:
+            m = np.zeros(self.n) + m
+         
         # Turn init_pop into an array:
         if type(init_pop) == float or type(init_pop)== int:
             init_pop = [np.zeros(gridpoints*gridpoints) + init_pop]*self.n
@@ -90,8 +94,8 @@ class CompetitiveLV(SBMLwriter):
         self.model = self.diffusion(self.model, self.species, d)
 
         # Reproduction and intraspecific competition 
-        for sp,ip,r in zip(self.species,init_pop,growth_rate):
-             self.model = self.add_sp(self.model,sp,r,ip)
+        for sp,ip,r,mi in zip(self.species,init_pop,growth_rate,m):
+             self.model = self.add_sp(self.model,sp,r,ip,mi)
 
         # Interspecific competition. 
         for sp1,sp2 in itertools.combinations(self.species,2):
@@ -113,7 +117,7 @@ class CompetitiveLV(SBMLwriter):
         return model 
         
         
-    def add_sp(self, model, name, r, initial_ammount):
+    def add_sp(self, model, name, r, initial_ammount,m):
         #Species
         s = model.createSpecies()
         s.setId(name)
@@ -167,6 +171,27 @@ class CompetitiveLV(SBMLwriter):
         product = comp.createProduct()
         product.setSpecies(s.getId())
         product.setStoichiometry(1)
+
+
+        # Long range migration
+        if m != 0:
+
+            mc = model.createParameter()
+            mc.setId('m_{}'.format(name))
+            mc.setName('m_{}'.format(name))
+            mc.setValue(m)
+            mc.setUnits('per_second')
+
+            migration = model.createReaction()
+            migration.setId('long_range_migration_'+name) 
+            migration.setReversible(False)
+
+            kinetic_law = migration.createKineticLaw()
+            kinetic_law.setMath(libsbml.parseL3Formula("1*"+mc.getId()))
+
+            product = migration.createProduct()
+            product.setSpecies(s.getId())
+            product.setStoichiometry(1)
 
         return model
 
