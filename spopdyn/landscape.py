@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 
 
-def seq_gaussian(size, alpha,rmax=1):
+def seq_gaussian(size, alpha,rmax=1,compute_semivariogram=False):
     """
     Create a random landscape using the sequential gaussian algorithm.
     
@@ -38,15 +38,19 @@ def seq_gaussian(size, alpha,rmax=1):
         #print("{:0.2%} p:{}, mu: {}, sigma: {}".format(i/float(N),p,mu,sigma))
         landscape.flat[p] = np.random.normal(mu,sigma)
 
-    semivariogram = np.zeros(D.max()+1)
-    semi_n= np.zeros(D.max()+1)
-    for i,x in enumerate(path):
-        for j,y in enumerate(path):
-            semivariogram[D[i,j]] += (landscape.flat[x]-landscape.flat[y])**2
-            semi_n[D[i,j]] += 1
-    semivariogram /= 2*semi_n
     
-    return landscape,semivariogram
+    
+    if compute_semivariogram:
+        semivariogram = np.zeros(D.max()+1)
+        semi_n= np.zeros(D.max()+1)
+        for i,x in enumerate(path):
+            for j,y in enumerate(path):
+                semivariogram[D[i,j]] += (landscape.flat[x]-landscape.flat[y])**2
+                semi_n[D[i,j]] += 1
+        semivariogram /= 2*semi_n
+        return landscape,semivariogram
+    else:
+        return landscape
 
 def torus_distance(a,b,size):
     """

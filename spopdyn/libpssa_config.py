@@ -22,7 +22,7 @@ def libpSSA_config(sbml_file, outpath, species,
         "boundary": "periodic",
         "volumetype": volume,
         "gridpoints": gridpoints,
-        "initialpop":"multiply",
+        "initialpop":"sbml",
         "omega":K,
         "stat_info":"single",
     }

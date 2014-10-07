@@ -6,3 +6,6 @@
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+
+#libpssa (ignoring everything but the source that were manually added)
+spopdyn/libpssa/**/*

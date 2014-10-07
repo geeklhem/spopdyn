@@ -11,7 +11,7 @@ import logging
 import cPickle as pickle 
 import numpy as np
 import matplotlib.pyplot as plt
-
+import glob
 
 logger = logging.getLogger("spopdyn")
 logger.setLevel(logging.DEBUG)
@@ -30,7 +30,10 @@ if __name__ == "__main__":
 
     SPECIES = 20
     GRIDPOINTS = 25
-    
+
+    if len(sys.argv) == 1:
+        print "Usage: name [nb of species] [gridpoints] [alpha]"
+        exit(1)
     if len(sys.argv)>2:
         SPECIES = int(sys.argv[2])
     if len(sys.argv)>3:
@@ -68,8 +71,9 @@ if __name__ == "__main__":
         
     if not os.path.exists(config_file):
         cfg = spopdyn.libpssa_config.libpSSA_config(sbml_file, name+"/", species,
-                                                    dt=0.1, tend=100, n=1,
-                                                    spatial=spatial, gridpoints=GRIDPOINTS, K=1000*GRIDPOINTS**2)
+                                                    dt=0.1, tend=100, n=3,
+                                                    spatial=spatial, gridpoints=GRIDPOINTS,
+                                                    K=1000*GRIDPOINTS**2)
         with open(config_file,"w") as f:
             f.write(cfg)
             logger.info("config file saved as {}.".format(config_file))
@@ -77,7 +81,7 @@ if __name__ == "__main__":
     if not os.path.exists(name+"/libpssa.log"):
         logger.info("Running pSSAlib...")
         try:
-            re = subprocess.check_output(("/home/guilhem/shift/libpssa/pssa_cli/pssa -c {}"
+            re = subprocess.check_output((os.path.dirname(__file__)+"/../spopdyn/libpssa/pssa_cli/pssa -c {}"
                                          ).format(config_file), shell=True)
         except Exception as e:
             logger.error(e)
@@ -88,7 +92,9 @@ if __name__ == "__main__":
     logger.info("Data extraction...")
     if spatial:
         if not os.path.exists(data_file):
-            data = spopdyn.extract.data_extract_2D("{}/PDM/PSSA_trajectory_0_0.txt".format(name),50,param)
+            files = glob.glob("{}/PDM/PSSA_trajectory_*.txt".format(name))
+            #data = spopdyn.extract.data_extract_2D(files[0],50,param)
+            data = spopdyn.extract.extract_multiple_trajectories_to_timeseries(files,50,param)
             with open(data_file,"w") as f:
                 logger.info("Saving data as {}.".format(data_file))
                 pickle.dump(data,f)
@@ -98,15 +104,18 @@ if __name__ == "__main__":
                 logger.info("Loading data from {}.".format(data_file))
                 data = pickle.load(f)
 
-        spopdyn.display.matrix_movie(data,
-                                     ("Biomass","Species Richness","Diversity","CSI","CTI"),
-                                     (1000,SPECIES,SPECIES,1,1),
-                                     name+"/")
+        env = (("Habitat",habitat),
+               ("Temperature",temperature),)
 
-        spopdyn.display.exp_summary(habitat,temperature,param)
-        plt.tight_layout()
-        plt.savefig(name+"/summary.png",pad_inches=0)
-        plt.clf()
+        name_ts = ("Regional Species Richness", "Regional Diversity","Local Species Richness","Local Diversity","Local CSI","Local CTI","Local Biomass",)
+        print [(k,len(v)) for k,v in data[0].items()]
+        ts = [(n,(data[0][n],data[1][n]))
+              for n in name_ts] 
+
+        spopdyn.display.experimental_report(env,
+                                            param,
+                                            ts,
+                                            name+"/")
 
 
     elif not spatial and not os.path.exists(data_file):

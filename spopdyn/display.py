@@ -12,33 +12,39 @@ import mpl_toolkits.axisartist as AA
 
 logger = logging.getLogger("spopdyn")
 
+def show_matrix(matrix,kind="temperature"):
+    if kind=="temperature":
+        cmap = "bwr"
+        plt.title("Temperature")
+    elif kind=="habitat":
+        cmap = "Greens"
+        plt.title("Habitat")
+    else:
+        cmap = "Blues"
+    plt.imshow(matrix,
+               interpolation='None',
+               cmap=cmap,
+               vmin=0,
+               vmax=1,
+               aspect="equal",)
+    plt.xlabel("x")
+    plt.ylabel("y")
+
+    plt.xticks([])
+    plt.yticks([])
+    plt.colorbar(orientation="horizontal", fraction=0.045)
+
+
+
 def exp_summary(habitat,temperature,species):
     plt.subplot(2,2,1)
     niches(species)
     plt.subplot(2,2,2)
     environment(habitat,temperature)
     plt.subplot(2,2,3)
-    plt.imshow(habitat,
-               interpolation='None',
-               cmap="Greens",
-               vmin=0,vmax=1,
-               aspect="equal")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.title("Habitat")
-    plt.colorbar(fraction=0.05)
+    show_matrix(habitat,"habitat")
     plt.subplot(2,2,4)
-    plt.imshow(temperature,
-               interpolation='None',
-               cmap="bwr",
-               vmin=0,
-               vmax=1,
-               aspect="equal",)
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.colorbar(fraction=0.05)
-    plt.title("Temperature")
-
+    show_matrix(temperature,"temperature")
 
 def environment(habitat,temperature):
     gp = habitat.shape[0]
@@ -154,21 +160,22 @@ def experimental_report(environment, species, time_series, path):
     plt.subplot(L,M,M)
     niches(species)
 
-    colors = ["blue","green","orange","pink","red"]
+    colors = ["blue","green","brown","purple","red"]
     host = [host_subplot(L*100+10+2+j, axes_class=AA.Axes) for j in range(L-1)]
 
 
     for i,(k,v) in enumerate(time_series):
-        if i%2 != 0:
-            ax = host[int(i/2)].twinx()
-        else:
-            ax = host[int(i/2)]
-            
+        #if False and i%2 != 0:
+        #    ax = host[int(i/2)].twinx()
+        #else:
+        ax = host[int(i/2)]
         ax.set_ylabel(k)
         if len(v) == 2:
+            T = len(v[0])
             ax.plot(v[0],
                     label=k,
-                    color=colors[i%len(colors)] )
+                    color=colors[i%len(colors)],
+                    linewidth=2)
             ax.fill_between(range(len(v[0])),
                               v[0]-v[1], v[0]+v[1],
                               alpha=0.3,
@@ -177,13 +184,19 @@ def experimental_report(environment, species, time_series, path):
             T = len(v)
             ax.plot(range(len(v)),v, color=colors[i%len(colors)], label=k)
             
+    
     for h in host:
         h.set_xlim((0,T-1))
         h.legend()
         h.set_xlabel("Time")
 
+    #plt.margins(x=0.05,y=0,tight=None)
     #plt.tight_layout()
+    for ax in host:
+        ax.set_ymargin(0.05)
+        ax.autoscale(enable=True, axis=u'both', tight=False)
     plt.savefig("{}/experimental_report.pdf".format(path),pad_inches=0)
+    plt.savefig("{}/experimental_report.png".format(path),pad_inches=0)
     plt.clf() 
 
 if __name__ == "__main__":
@@ -192,7 +205,7 @@ if __name__ == "__main__":
            ("Diversity", (np.random.uniform(size=10) , np.random.uniform(size=10)*0.1) ),
            ("CTI",  np.random.uniform(size=10)),
            ("CSI",  np.random.uniform(size=10)),
-    ("Biomass", np.random.uniform(size=10)),]
+        ("Biomass", np.random.uniform(size=10)),]
     
     e = [("Habitat", np.random.uniform(0,1,size=(25,25))),
          ("Temperature", np.random.uniform(0,1,size=(25,25)))]

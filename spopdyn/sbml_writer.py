@@ -1,3 +1,4 @@
+from __future__ import division
 import logging
 import itertools
 
@@ -59,10 +60,10 @@ class SBMLwriter(object):
 
 
 class CompetitiveLV(SBMLwriter): 
-    def __init__(self,n,d,alpha=1,init_pop=1000,gridpoints=10):
+    def __init__(self,growth_rate,d,alpha=1,init_pop=1000,gridpoints=10):
         """ Cosntructor
         Args:
-            n (array): specific growth rate.
+            
             d (array or floar): diffusion constant.
             alpha (matrix or float): interspecific competition strength.
             init_pop (array or float): initial proportion (with respect
@@ -70,17 +71,10 @@ class CompetitiveLV(SBMLwriter):
         """
 
         
-        self.n = n    
-        param = np.random.uniform(0,1,size=(n,5))
-        #param[:,2:5] /= 3
-        self.param = param 
-        r = []
-        
+        self.n = len(growth_rate)            
         self.species = ["SP{{:0{}}}".format(int(np.log10(self.n)+1)).format(i) for i in range(self.n)]
         self.name = "Competitive Lotka Volterra with {} species".format(self.n)
         SBMLwriter.__init__(self)
-
-        self.habitat,self.temperature = create_environment(gridpoints)
         
         # Turn alpha into a matrix:
         if type(alpha) == int or type(alpha)== float :
@@ -90,22 +84,21 @@ class CompetitiveLV(SBMLwriter):
             d = np.zeros(self.n) + d
         # Turn init_pop into an array:
         if type(init_pop) == float or type(init_pop)== int:
-            init_pop = np.zeros(self.n) + init_pop
+            init_pop = [np.zeros(gridpoints*gridpoints) + init_pop]*self.n
 
         # Add diffusion constants.
         self.model = self.diffusion(self.model, self.species, d)
 
         # Reproduction and intraspecific competition 
-        for sp,p,ip in zip(self.species,param,init_pop):
-            r.append(growth_rate(self.temperature,self.habitat,p[0],p[1],p[2],p[3],p[4]))
-            self.model = self.add_sp(self.model,sp,r[-1],ip)
+        for sp,ip,r in zip(self.species,init_pop,growth_rate):
+             self.model = self.add_sp(self.model,sp,r,ip)
 
         # Interspecific competition. 
         for sp1,sp2 in itertools.combinations(self.species,2):
             n1 = int(sp1[2:])
             n2 = int(sp2[2:])
-            self.model = self.inter_spe_comp(self.model, sp1, sp2, a[n1,n2]*r[n1])
-            self.model = self.inter_spe_comp(self.model, sp2, sp1, a[n2,n1]*r[n2])
+            self.model = self.inter_spe_comp(self.model, sp1, sp2, a[n1,n2]*growth_rate[n1])
+            self.model = self.inter_spe_comp(self.model, sp2, sp1, a[n2,n1]*growth_rate[n2])
 
         if self.document.getNumErrors() != 0:
             logger.error(self.document.printErrors())
@@ -127,8 +120,10 @@ class CompetitiveLV(SBMLwriter):
         s.setName(name) 
         s.setCompartment('c') 
         s.setConstant(False)
-        s.setInitialAmount(initial_ammount)
+        s.setInitialAmount(0)
         s.setSubstanceUnits('item')
+        s.appendAnnotation('<libpSSA:init_pop xmlns:libpSSA="uri" init_pop="'+';'.join(map(str,initial_ammount.flat))+'"></libpSSA:init_pop>')
+        
 
         # Growth rate
         gr = model.createParameter()
@@ -200,27 +195,4 @@ class CompetitiveLV(SBMLwriter):
         return model 
 
 
-def create_environment(gridpoints,alpha=2,temperature=.5):
-    """
-    Args: 
-        gridpoints (int): number of gridpoints.
-        temperature (float): uniform temperature value.
-        alpha (float): autocorrelation parameter for habitat.
-    Returns:
-       (tuple) two gridpoints^2 matrix: environment and temperature.
-    """
-    temperature = np.zeros((gridpoints,gridpoints)) + temperature
-    habitat = spopdyn.landscape.seq_gaussian(size=gridpoints,alpha=alpha,rmax=1)[0]
-    return habitat,temperature
 
-    
-def growth_rate(temperature,habitat,muH,sH,muT,sT,rho):
-    l = len(temperature.flat)
-    rate = np.zeros(l)
-    for x in range(l):
-        cov = np.array(([sH**2,rho*sT*sH],[rho*sT*sH,sT**2]))
-        rate[x] = st.multivariate_normal.pdf((habitat.flat[x],temperature.flat[x]),
-                                             [muH,muT],
-                                             cov)
-        rate[x] = min(max(rate[x],1e-200),1e300)
-    return rate
