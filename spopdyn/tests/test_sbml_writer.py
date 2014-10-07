@@ -11,6 +11,5 @@ def test_write():
     a= spopdyn.sbml_writer.CompetitiveLV(*F["compLVargs"])
     a.save(F["file"])
 
-
 def teardown():
     os.remove(F["file"])

@@ -57,6 +57,66 @@ def create_environment(gridpoints,alpha=2,temperature=.5):
     return habitat,temperature
 
 
+
+def sticky_experiment(habitat,temperature,species,initial_pop,param):
+    """Chain multiple experiments and use the final condition of one as
+    the initial conditions of the following.  See the documentation of
+    experiment to have a description of the parameters. The only
+    difference is that habitat & temperature are list of np.arrays
+    (giving the conditions for the consecutive experiments)
+    """
+
+    if not os.path.exists(param["name"]):
+        os.mkdir(param["name"])
+        logger.info("Directory {}/ created.".format(param["name"]))    
+    else:
+        logger.warning("{}/ exists already.".format(param["name"]))
+
+    
+    env = {}
+    if len(habitat) == 1:
+        env["Habitat"] = habitat[0] 
+        habitat = habitat * len(temperature)
+    elif len(temperature) == 1:
+        env["Temperature"] = temperature[0]
+        temperature = temperature * len(habitat)
+    
+    name = param["name"]
+    paths = {"data":name+"/data.pkle"}
+    if not os.path.exists(paths["data"]):
+        data_file = []
+        for n,(h,t) in enumerate(zip(habitat,temperature)):
+            param["name"] = name+"/step{}".format(n)
+            experiment(h,t,species,initial_pop,param)
+            data_file.append(param["name"]+"/data.pkle") 
+            initial_pop = spopdyn.extract.get_final_pop(param["name"]+"/PDM/PSSA_trajectory_0_0.txt",param["frames"])
+        data = spopdyn.extract.fusion_consecutive(data_file)
+        with open(paths["data"],"w") as f:
+                logger.info("Saving data as {}.".format(paths["data"]))
+                pickle.dump(data,f)
+    else:
+        with open(paths["data"],"r") as f:
+            logger.info("Loading data from {}.".format(paths["data"]))
+            data = pickle.load(f)
+
+    ts_toplot = ("Regional Species Richness",
+                 "Regional Diversity",
+                 "Local Species Richness",
+                 "Local Diversity",
+                 "Local CSI",
+                 "Local CTI",
+                 "Local Biomass")
+    ts = [(n,(data[0][n],data[1][n])) for n in ts_toplot] 
+
+    spopdyn.display.experimental_report([(k,v) for k,v in env.items()],
+                                        species,
+                                        ts)
+    plt.savefig("{}/experimental_report.pdf".format(name),pad_inches=0)
+    plt.savefig("{}/experimental_report.png".format(name),pad_inches=0)
+    plt.clf() 
+    
+    
+
 def experiment(habitat,temperature,species,initial_pop,param):
     """
     Args:
@@ -167,6 +227,9 @@ def experiment(habitat,temperature,species,initial_pop,param):
 
     spopdyn.display.experimental_report(env,
                                         species,
-                                        ts,
-                                        param["name"]+"/")
+                                        ts)
+    plt.savefig("{}/experimental_report.pdf".format(param["name"]),pad_inches=0)
+    plt.savefig("{}/experimental_report.png".format(param["name"]),pad_inches=0)
+    plt.clf() 
+
 

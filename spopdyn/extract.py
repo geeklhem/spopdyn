@@ -2,6 +2,7 @@ from __future__ import division
 import logging
 import numpy as np
 import subprocess
+import cPickle as pickle
 logger = logging.getLogger("spopdyn")
 
 def data_extract_single(fi):
@@ -138,8 +139,8 @@ def extract_multiple_trajectories_to_timeseries(fi,n,param):
         return_mean[k] = np.mean(arr,0)
         return_var[k] = np.var(arr,0)
         arr = np.array(ts_svar[k])
-        return_mean["spatial variance of"+k] = np.mean(arr,1)
-        return_var["spatial variance of"+k] = np.var(arr,1)
+        #return_mean["spatial variance of "+k] = np.mean(arr,1)
+        #return_var["spatial variance of "+k] = np.var(arr,1)
     #print "\n mean {}: \n m: {}".format(k,return_mean[k])
     return return_mean,return_var
         
@@ -158,3 +159,20 @@ def time_serie(matrices):
         var[i] = np.var(M)
     return (mean,var)
 
+
+def fusion_consecutive(files):
+    """
+    Open consecutive datafiles of timeseries and fusion them. 
+    """
+    with open(files[0],"r") as f:
+        data = pickle.load(f)
+
+    for fi in files[1:] :
+        with open(fi,"r") as f:
+            dt = pickle.load(f)
+            for k in dt[0].keys():
+                
+                data[0][k] = np.concatenate((data[0][k], dt[0][k]))
+                data[1][k] = np.concatenate((data[1][k], dt[1][k]))
+                
+    return data 

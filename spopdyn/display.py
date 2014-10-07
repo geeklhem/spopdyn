@@ -13,6 +13,14 @@ import mpl_toolkits.axisartist as AA
 logger = logging.getLogger("spopdyn")
 
 def show_matrix(matrix,kind="temperature"):
+    """
+    Display the matrix using matplotlib, the title and the colormap of
+    the plot are deduced from the 'kind' parameter.
+
+    Args:
+        matrix (np.array): 
+        kind (str): kind of information.
+    """
     if kind=="temperature":
         cmap = "bwr"
         plt.title("Temperature")
@@ -37,6 +45,14 @@ def show_matrix(matrix,kind="temperature"):
 
 
 def exp_summary(habitat,temperature,species):
+    """
+    Plot the environmental matrices and a ecological niche representation.
+
+    Args:
+        habitat (np.array): habitat value.
+        temperature (np.array): temerature value.
+        species (np.array): species characteristics for the niche plotting.
+    """
     plt.subplot(2,2,1)
     niches(species)
     plt.subplot(2,2,2)
@@ -131,7 +147,7 @@ def matrix_movie(matrices,titles,maxvalues,path):
     subprocess.call("mplayer {}video.mp4  -idle -fixed-vo".format(path), shell=True)
 
 
-def experimental_report(environment, species, time_series, path):
+def experimental_report(environment, species, time_series):
     """
     Save a report of the experiment as an eps file.
 
@@ -190,14 +206,9 @@ def experimental_report(environment, species, time_series, path):
         h.legend()
         h.set_xlabel("Time")
 
-    #plt.margins(x=0.05,y=0,tight=None)
-    #plt.tight_layout()
     for ax in host:
         ax.set_ymargin(0.05)
         ax.autoscale(enable=True, axis=u'both', tight=False)
-    plt.savefig("{}/experimental_report.pdf".format(path),pad_inches=0)
-    plt.savefig("{}/experimental_report.png".format(path),pad_inches=0)
-    plt.clf() 
 
 if __name__ == "__main__":
     t_s = [
