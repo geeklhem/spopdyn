@@ -186,6 +186,9 @@ int main(int argc, char** argv)
 		if (strInitialPop == "distribute") simInfo.eInitialPop = pssalib::datamodel::SimulationInfo::IP_Distribute;
 		else if (strInitialPop == "concentrate") simInfo.eInitialPop = pssalib::datamodel::SimulationInfo::IP_Concentrate;
 		else if (strInitialPop == "multiply") simInfo.eInitialPop = pssalib::datamodel::SimulationInfo::IP_Multiply;
+		else if (strInitialPop == "sbml") { simInfo.eInitialPop = pssalib::datamodel::SimulationInfo::IP_Sbml;
+		  std::cout << "set to sbml" << std::endl;
+		}
 		
 		if (vm["gnuplot"].as<STRING>() == STRING("yes"))
 			simInfo.plotVisualize = true;

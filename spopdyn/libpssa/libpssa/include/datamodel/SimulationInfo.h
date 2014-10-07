@@ -77,7 +77,8 @@ namespace pssalib
 				IP_Distribute,		//!<Uniformly distributed initial population
 				IP_Concentrate,		//!<Population concentrated in the middle
 				IP_Multiply,		//!<Get the initial amount from the SBML file and uses this value for all cells
-				IP_UserDefined		//!<User Defined (need callback)
+				IP_UserDefined,		//!<User Defined (need callback)
+				IP_Sbml //!<get the values from the SBML annotation
 			} InitialPopulationType;
 			
 		/////////////////////////////////

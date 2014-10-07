@@ -469,7 +469,7 @@ namespace pssalib
 					/// GET Reaction annotation
 					if (reaction->isSetAnnotation()){
 					  XMLNode * annotation = reaction->getAnnotation();
-					  ri.spatial_c = getSpatialC(annotation,ptrSimInfo->unNumGridPoints);
+					  ri.spatial_c = getSpatial(annotation,ptrSimInfo->unNumGridPoints,"rate");
 						}
 					else{
 					  ri.spatial_c = NULL;
@@ -850,8 +850,19 @@ namespace pssalib
 					for(UNSIGNED_INTEGER si = 0; si < ptrData->unSubvolumes; si++) {
 						ptrData->arSubvolumes[si].aruN[i+1] = (INTEGER)species->getInitialAmount();
 					}
-				} else if (ptrSimInfo->eInitialPop == pssalib::datamodel::SimulationInfo::IP_UserDefined) {
-				  
+				} else if (ptrSimInfo->eInitialPop == pssalib::datamodel::SimulationInfo::IP_Sbml) {
+				  /*** GET INITIAL PROPORTION FROM SBML FILE ***/
+				  if (species->isSetAnnotation()){
+					  XMLNode * annotation = species->getAnnotation();
+					  double* init_pop = getSpatial(annotation,ptrSimInfo->unNumGridPoints,"init_pop");
+
+					  for(UNSIGNED_INTEGER si = 0; si < ptrData->unSubvolumes; si++) {
+						ptrData->arSubvolumes[si].aruN[i+1] = (INTEGER)init_pop[si];
+					  }
+				
+				  }
+				}  else if (ptrSimInfo->eInitialPop == pssalib::datamodel::SimulationInfo::IP_UserDefined) {
+  
 					if (ptrSimInfo->eInitialUserDefined == NULL) {
 						std::cerr << "GroupingModule::initialize_mappings: No initial population callback" << std::endl;
 					}
@@ -867,7 +878,10 @@ namespace pssalib
 					}
 					
 					delete(in);
-				}
+				  
+				}  else{
+					std::cerr << "GroupingModule::initialize_mappings: No initial population in the \"init\" attribute of the species' annotation." << std::endl;
+				  }
 			}
 
 			return true;
@@ -1413,13 +1427,13 @@ namespace pssalib
 		}
 
 	  //////////////////////////////:
-	  double* GroupingModule::getSpatialC(XMLNode * annotation,int gridpoints)
+	  double* GroupingModule::getSpatial(XMLNode * annotation, int gridpoints, std::string attr_name)
 	  {
 		int n_subvolumes = gridpoints * gridpoints;
 		  
 		XMLNode& child = annotation->getChild(0);
 		const XMLAttributes atr = child.getAttributes();
-		std::string content = child.getAttrValue(atr.getIndex("rate"));
+		std::string content = child.getAttrValue(atr.getIndex(attr_name));
 		
 		
 		// Get the content of the xml node and split it...

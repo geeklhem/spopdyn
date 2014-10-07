@@ -115,7 +115,7 @@ namespace pssalib
 			void printsp(int coef, std::string name);
 			void PrintSimulationInformation(pssalib::datamodel::SimulationInfo* ptrSimInfo);
 			double getDiffusion(XMLNode * xn, std::string str);
-			double* getSpatialC(XMLNode * annotation, int gridpoints);
+			double* getSpatial(XMLNode * annotation, int gridpoints, std::string attr_name);
 			
 		public:
 			//! Define a type for index=>sbml_species mapping
