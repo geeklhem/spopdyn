@@ -14,6 +14,12 @@ setup(name='spopdyn',
       license='GPLv3',
       packages=['spopdyn'],
       zip_safe=False,
+      install_requires=[
+          'matplotlib',
+          'numpy',
+          'scipy',
+          'python-libsbml',
+      ],
       test_suite='nose.collector',
       tests_require=['nose'],
       scripts=['bin/spopdyn'],)
