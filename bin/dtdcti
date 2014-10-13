@@ -79,7 +79,8 @@ if __name__ == "__main__":
     species = np.random.uniform(0,1,size=(50,5))
     species[:,4] = 0 
 
-    param = {"alpha":1, 
+    param = {"alpha":1,
+             "name":"test"
              "d":1,
              "K":500,
              "tend":25,
