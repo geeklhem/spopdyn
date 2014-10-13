@@ -68,7 +68,7 @@ def applyDT(habitat,temperature,species,param,pool):
             "deltaCTI":DCTI, "deltaCGI":DCGI,
             "initCTI":CTI, "initCGI":CGI}
     
-    with open( param["path"]+"/dt_dcti_dcgi.pkle","r") as f:
+    with open( param["path"]+"/dt_dcti_dcgi.pkle","w") as f:
         pkle.dump(out,f) 
     return out 
 
