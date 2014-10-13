@@ -1,0 +1,87 @@
+# -*-Python-*-
+#!/usr/bin/env python
+import matplotlib.pyplot as plt
+import numpy as np
+import spopdyn.display as d
+import spopdyn.experiment as e
+import spopdyn.extract as ext
+from IPython.core.display import Image 
+e.logger.setLevel(e.logging.CRITICAL)
+import spopdyn.landscape as landscape
+import cPickle as pkle
+import os
+
+import multiprocessing as mp
+ 
+# Fix pool size
+try:
+p = {24:6,8:5}[mp.cpu_count()]
+except KeyError:
+p = 1
+
+
+temperature = np.zeros((15,15))+0.5
+habitat = landscape.seq_gaussian(15,2)
+species = np.random.uniform(0,1,size=(50,5))
+species[:,4] = 0 
+
+param = {"alpha":1, 
+         "d":1,
+         "K":500,
+         "tend":25,
+         "dt":0.1,
+         "replicas":1,
+         "frames":250,
+         "m":1e-10,
+         }
+
+def measure(args):
+    dt,CTI,CGI,habitat,temperature,species,initial_pop,param = args
+    param["name"] = path + "/DT{}".format(dt)
+    new_temp = temperature+dt
+    if not os.path.exists(param["name"]+"/data.pkle"):
+        e.experiment(habitat,new_temp,species,initial_pop,param)
+        plt.close()
+    with open(param["name"]+"/data.pkle","r") as f:
+        data = pkle.load(f) 
+    return dt,data[0]["Local CTI"][-1]-CTI, data[0]["Local CSI"][-1]-CGI
+
+def applyDT(habitat,temperature,species,param):
+    path = param["name"] + "_applyDT"
+    if not os.path.exists(path):
+        os.mkdir(path)
+    param["name"] = path+"/intial_conditions"
+    uniform_pop = [np.zeros(temperature.shape) + 10]*len(rdm)
+    
+    e.experiment(habitat,temperature,species,uniform_pop,param)
+    
+    initial_pop = ext.get_final_pop("{}/PDM/PSSA_trajectory_0_0.txt".format(param["name"]),
+                                    param["frames"])
+    
+    with open("{}/data.pkle".format(param["name"]),"r") as f:
+        data = pkle.load(f)
+        
+        stdcti = np.std(data[0]["Local CTI"][-10:])
+        stdcgi = np.std(data[0]["Local CSI"][-10:])
+        if > 1e-3 or > 1e-3:
+            print "Warning: Initial conditions does not seems to be at the equilibrium"
+
+        CTI  = data[0]["Local CTI"][-1]
+        CGI  = data[0]["Local CSI"][-1]
+        
+    # Measure the DCTI,DCGI for different DT.
+    args = [] 
+    for n,T in enumerate(np.linspace(0.05,0.5,10)):
+        for sign in (1,-1):
+            dt = sign*T
+            args.append((dt, CTI, CGI, habitat, temperature, species, initial_pop, param))
+    DT,DCTI,DCGI = zip(*POOL.map(measure,args))
+    
+    out = {"deltaT":DT,
+            "deltaCTI":DCTI, "deltaCGI":DCGI,
+            "initCTI":CTI, "initCGI":CGI}
+    
+    with open(path+"/dt_dcti_dcgi.pkle","r") as f:
+        pkle.dump(out,f) 
+    
+
