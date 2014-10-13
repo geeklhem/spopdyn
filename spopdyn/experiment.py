@@ -201,13 +201,14 @@ def experiment(habitat,temperature,species,initial_pop,param):
     if not os.path.exists(param["name"]+"/libpssa.log"):
         logger.info("Running pSSAlib...")
         try:
-            re = subprocess.check_output("{} -c {}".format(PSSALIB, paths["config"]),
-                                         shell=True)
+            with open(param["name"]+"/libpssa.err",'w') as f:
+                re = subprocess.check_output("{} -c {}".format(PSSALIB, paths["config"]),
+                                             shell=True,stderr=f)
         except Exception as e:
             logger.error(e)
             raise e
         else:
-            with open(param["name"]+"/libpssa.log",'w') as f:
+            with open(param["name"]+"/libpssa.out",'w') as f:
                 f.write(re)
                 
     #------- DATA EXTRACTION ----------------#                
