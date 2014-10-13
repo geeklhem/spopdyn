@@ -72,7 +72,9 @@ def sticky_experiment(habitat,temperature,species,initial_pop,param):
     else:
         logger.warning("{}/ exists already.".format(param["name"]))
 
+
     
+
     env = {}
     if len(habitat) == 1:
         env["Habitat"] = habitat[0] 
@@ -80,12 +82,16 @@ def sticky_experiment(habitat,temperature,species,initial_pop,param):
     elif len(temperature) == 1:
         env["Temperature"] = temperature[0]
         temperature = temperature * len(habitat)
-    
+
+
+        
     name = param["name"]
     paths = {"data":name+"/data.pkle"}
     if not os.path.exists(paths["data"]):
         data_file = []
+        env_path = []
         for n,(h,t) in enumerate(zip(habitat,temperature)):
+            env_path.append((np.mean(h),np.mean(t)))
             param["name"] = name+"/step{}".format(n)
             experiment(h,t,species,initial_pop,param)
             data_file.append(param["name"]+"/data.pkle") 
@@ -93,11 +99,11 @@ def sticky_experiment(habitat,temperature,species,initial_pop,param):
         data = spopdyn.extract.fusion_consecutive(data_file)
         with open(paths["data"],"w") as f:
                 logger.info("Saving data as {}.".format(paths["data"]))
-                pickle.dump(data,f)
+                pickle.dump((data,env_path),f)
     else:
         with open(paths["data"],"r") as f:
             logger.info("Loading data from {}.".format(paths["data"]))
-            data = pickle.load(f)
+            data,env_path = pickle.load(f)
 
     ts_toplot = ("Regional Species Richness",
                  "Regional Diversity",
@@ -106,11 +112,14 @@ def sticky_experiment(habitat,temperature,species,initial_pop,param):
                  "Local CSI",
                  "Local CTI",
                  "Local Biomass")
-    ts = [(n,(data[0][n],data[1][n])) for n in ts_toplot] 
+    ts = [(n,(data[0][n],data[1][n])) for n in ts_toplot]
 
+    dt = len(ts[0][1][0])/len(env_path)
+    events = [dt*(i+1) for i in range(len(env_path[:-1]))]
     spopdyn.display.experimental_report([(k,v) for k,v in env.items()],
                                         species,
-                                        ts)
+                                        ts,
+                                        env_path,events)
     plt.savefig("{}/experimental_report.pdf".format(name),pad_inches=0)
     plt.savefig("{}/experimental_report.png".format(name),pad_inches=0)
     plt.clf() 

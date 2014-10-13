@@ -75,7 +75,7 @@ def environment(habitat,temperature):
     plt.ylabel("y")
     plt.title("Environmental value")
 
-def niches(species,gp=25):
+def niches(species,gp=25,path=None):
     img = np.zeros((gp,gp,3))
 
     for x in range(gp):
@@ -89,14 +89,21 @@ def niches(species,gp=25):
                aspect="equal",)
     ax = plt.gca()
 
+    names =  len(species) < 6
+
     for i,sp in enumerate(species):
         ellipse = Ellipse(xy=(sp[0], sp[1]), width=sp[2], height=sp[3], 
                           edgecolor='k',alpha=0.1, fc='None', lw=1,angle=sp[4]*360)
         ax.add_patch(ellipse)
-        #plt.annotate("$SP{}$".format(i),(sp[0],sp[1]),size=10)
-    plt.scatter(species[:,0],species[:,1])
+        if names:
+            plt.annotate("{}".format(i),(sp[0],sp[1]),size=10)
+    plt.scatter(species[:,0],species[:,1],color="k",s=20,marker="x")
     plt.xlim((0,1))
     plt.ylim((0,1))
+
+    if path is not None:
+        for c1,c2 in zip(path[:-1],path[1:]):
+            plt.arrow(c1[0],c1[1],c2[0]-c1[0],c2[1]-c1[1],color="blue")
     
     plt.xlabel("Temperature")
     plt.ylabel("Habitat")
@@ -147,7 +154,7 @@ def matrix_movie(matrices,titles,maxvalues,path):
     subprocess.call("mplayer {}video.mp4  -idle -fixed-vo".format(path), shell=True)
 
 
-def experimental_report(environment, species, time_series):
+def experimental_report(environment, species, time_series,path=None,events=None):
     """
     Save a report of the experiment as an eps file.
 
@@ -174,7 +181,7 @@ def experimental_report(environment, species, time_series):
         plt.title(k)
         plt.colorbar(orientation="horizontal", fraction=0.045)
     plt.subplot(L,M,M)
-    niches(species)
+    niches(species,path=path)
 
     colors = ["blue","green","brown","purple","red"]
     host = [host_subplot(L*100+10+2+j, axes_class=AA.Axes) for j in range(L-1)]
@@ -205,10 +212,13 @@ def experimental_report(environment, species, time_series):
         h.set_xlim((0,T-1))
         h.legend()
         h.set_xlabel("Time")
+        
+        h.set_ymargin(0.05)
+        h.autoscale(enable=True, axis=u'both', tight=False)
 
-    for ax in host:
-        ax.set_ymargin(0.05)
-        ax.autoscale(enable=True, axis=u'both', tight=False)
+        if events is not None:
+            h.vlines(events,*h.get_ylim(),alpha=0.1)
+
 
 if __name__ == "__main__":
     t_s = [
@@ -225,7 +235,7 @@ if __name__ == "__main__":
     s[:,-1] = 0
 
     experimental_report(e,s,t_s,".")
-    #subprocess.call("evince experimental_report.eps",shell=True)
+
 
 
 
