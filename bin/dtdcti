@@ -80,7 +80,7 @@ if __name__ == "__main__":
     species[:,4] = 0 
 
     param = {"alpha":1,
-             "name":"test"
+             "name":"test",
              "d":1,
              "K":500,
              "tend":25,
