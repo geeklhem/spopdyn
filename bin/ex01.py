@@ -7,7 +7,7 @@ temperature = np.zeros((2,2))+0.5
 habitat = np.zeros((2,2))+0.5
 species = np.array([(0.5,0.5,0.1,0.1,0),(0.5,0.6,0.1,0.1,0)])
 param = {"alpha":1,
-         "name":"2sp",
+         "name":"2sp_80pts",
           "d":1,
           "K":500,
           "tend":25,
@@ -15,7 +15,7 @@ param = {"alpha":1,
           "replicas":1,
           "frames":250,
           "m":1e-1,
-          "T_range":np.linspace(0,0.2,10),
+          "T_range":np.linspace(0,0.2,40),
           }
 dt = (species[1,1]**2-species[0,1]**2)/(2.*(species[1,1]-species[0,1])) - temperature[0,0]
 out = applyDT(habitat,temperature,species,param)
