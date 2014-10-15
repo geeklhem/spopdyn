@@ -5,6 +5,9 @@ import subprocess
 import cPickle as pickle
 logger = logging.getLogger("spopdyn")
 
+def remove_blanklines(fi):
+    subprocess.check_call("sed -i '/^$/d' {}".format(fi),shell=True)
+
 def data_extract_single(fi):
     abundance = []
     
@@ -16,7 +19,8 @@ def data_extract_single(fi):
     return abundance
 
 def get_final_pop(fi,n):
-    subprocess.check_call("sed -i '/^$/d' {}".format(fi),shell=True)
+
+    remove_blanklines(fi)
     with open(fi) as f:
         for i, l in enumerate(f):
             pass
@@ -41,6 +45,21 @@ def get_final_pop(fi,n):
                 
     return final_pop
 
+
+def popdyn(fi):
+    # remove empty lines
+    remove_blanklines(fi)
+    ab = []
+    with open(fi) as f:
+        for t,l in enumerate(f):
+            loc = l.split("\t")
+            ab_t = []
+            for j,ab_by_sp in enumerate(loc):
+                ab_t.append(np.fromstring(ab_by_sp,sep=",",dtype=int))
+            ab.append(np.array(ab_t).sum(0))
+            
+    return np.array(ab)
+
 def data_extract_2D(fi,n,species):
     biomass = []
     nbspecies = []
@@ -51,7 +70,7 @@ def data_extract_2D(fi,n,species):
     total_div = []
 
     # remove empty lines
-    subprocess.check_call("sed -i '/^$/d' {}".format(fi),shell=True)
+    remove_blanklines(fi)
     
     with open(fi) as f:
         for i, l in enumerate(f):

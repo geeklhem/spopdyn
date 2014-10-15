@@ -97,7 +97,7 @@ def niches(species,gp=25,path=None):
         ax.add_patch(ellipse)
         if names:
             plt.annotate("{}".format(i),(sp[1],sp[0]),size=10)
-    plt.scatter(species[:,1],species[:,0],color="k",s=20,marker="x")
+    plt.scatter(species[:,1], species[:,0], color="k", s=20, marker="x")
     plt.xlim((0,1))
     plt.ylim((0,1))
 
@@ -218,6 +218,8 @@ def experimental_report(environment, species, time_series,path=None,events=None)
 
         if events is not None:
             h.vlines(events,*h.get_ylim(),alpha=0.1)
+
+
 
 
 if __name__ == "__main__":
