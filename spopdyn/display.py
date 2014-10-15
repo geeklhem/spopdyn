@@ -92,7 +92,7 @@ def niches(species,gp=25,path=None):
     names =  len(species) < 6
 
     for i,sp in enumerate(species):
-        ellipse = Ellipse(xy=(sp[0], sp[1]), width=sp[2], height=sp[3], 
+        ellipse = Ellipse(xy=(sp[1], sp[0]), width=sp[3], height=sp[2], 
                           edgecolor='k',alpha=0.1, fc='None', lw=1,angle=sp[4]*360)
         ax.add_patch(ellipse)
         if names:
