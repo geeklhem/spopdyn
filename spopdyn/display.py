@@ -96,8 +96,8 @@ def niches(species,gp=25,path=None):
                           edgecolor='k',alpha=0.1, fc='None', lw=1,angle=sp[4]*360)
         ax.add_patch(ellipse)
         if names:
-            plt.annotate("{}".format(i),(sp[0],sp[1]),size=10)
-    plt.scatter(species[:,0],species[:,1],color="k",s=20,marker="x")
+            plt.annotate("{}".format(i),(sp[1],sp[0]),size=10)
+    plt.scatter(species[:,1],species[:,0],color="k",s=20,marker="x")
     plt.xlim((0,1))
     plt.ylim((0,1))
 
