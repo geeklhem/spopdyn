@@ -22,7 +22,7 @@ species = []
 outputs = []
 species.append(np.array([(0.5,0.5,0.1,0.1,0),(0.5,0.6,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
-dt = (species[1,1]**2-species[0,1]**2)/(2.*(species[1,1]-species[0,1])) - temperature[0,0]
+dt = (species[0][1,1]**2-species[0][0,1]**2)/(2.*(species[0][1,1]-species[0][0,1])) - temperature[0,0]
 
 param["name"] = "2sp_80pts_s02"
 species.append(np.array([(0.5,0.5,0.2,0.2,0), (0.5,0.6,0.2,0.2,0)]))
