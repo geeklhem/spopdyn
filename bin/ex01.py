@@ -41,9 +41,9 @@ N = len(outputs)
 plt.figure(figsize=(10,N*5))
 
 for n,(out,sp) in enumerate(zip(outputs,species)):
-    plt.subplot(1,N,1+n)
+    plt.subplot(N,2,1+n)
     d.niches(sp)
-    plt.subplot(1,N,2+n)
+    plt.subplot(N,2,2+n)
     plt.xlabel("$\Delta T$")
     plt.ylabel("$\Delta CTI$")
     plt.scatter(out["deltaT"],out["deltaCTI"],c=[color[x<0] for x in out["deltaT"]])
