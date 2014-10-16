@@ -37,9 +37,9 @@ outputs.append(applyDT(habitat,temperature,species[-1],param))
 
 
 color = "rb"
-
-plt.figure(figsize=(10,N*5))
 N = len(outputs)
+plt.figure(figsize=(10,N*5))
+
 for n,(out,sp) in enumerate(zip(outputs,species)):
     plt.subplot(1,N,1+n)
     d.niches(sp)
