@@ -20,7 +20,7 @@ def sensitivity_analysis(D, X, Y=None):
         dX = dX.reshape(-1,1)
 
     if len(D.shape) == 1:
-        D = np.vstack([D**n for n in  range(len(D))])
+        D = np.transpose(np.vstack([D**n for n in  range(len(D))]))
 
 
     print D
