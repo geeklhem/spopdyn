@@ -25,14 +25,13 @@ outputs = []
 species.append(np.array([(0.5,0.5,0.1,0.1,0),(0.5,0.6,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
 
-outputs[-1]["S"] = sty.sensitivity_analysis(outputs[-1]["deltaT"],outputs[-1]["deltaCTI"])
+outputs[-1]["S"] = sty.sensitivity_analysis(np.array(outputs[-1]["deltaT"]),
+                                            np.array(outputs[-1]["deltaCTI"]))
 dt = (species[0][1,1]**2-species[0][0,1]**2)/(2.*(species[0][1,1]-species[0][0,1])) - temperature[0,0]
 
 color = "rb"
 N = len(outputs)
 plt.figure(figsize=(10,N*5))
-
-
 
 for n,(out,sp) in enumerate(zip(outputs,species)):
     plt.subplot(N,2,2*n+1)
@@ -45,5 +44,5 @@ for n,(out,sp) in enumerate(zip(outputs,species)):
     plt.hlines(0,*plt.xlim())
     plt.vlines(0,*plt.ylim())
     plt.vlines(dt,*plt.ylim())
-plt.savefig("ex_01_m.png")
-plt.savefig("ex_01_m.eps")
+plt.savefig("ex_02_m.png")
+plt.savefig("ex_02_m.eps")
