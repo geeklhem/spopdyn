@@ -20,20 +20,29 @@ param = {"alpha":1,
 species = []
 outputs = []
 dt = []
-
+pts = []
 
 ## 2 SP. equal sigma, equal muH. 
 param["name"] = "EX03_01"
 species.append(np.array([(0.5,0.5,0.1,0.1,0),(0.5,0.6,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
 dt.append((species[0][1,1]**2-species[0][0,1]**2)/(2.*(species[0][1,1]-species[0][0,1])) - temperature[0,0])
+pts.append(([0.5],[0.5]))
 
+## N SP. equal sigma, equal muH. 
+param["name"] = "EX03_02a"
+param["T_range"] = np.linspace(0,0.5,100)
+species.append(np.array([(0.5,muT,0.05,0.05,0) for muT in (.1,.2,.3,.4,.5,.6,.7,.8,.9)]))
+outputs.append(applyDT(habitat,temperature,species[-1],param))
+pts.append(([0.5],[0.5]))
+dt.append(0)
 
 ## N SP. equal sigma, equal muH. 
 param["name"] = "EX03_02"
 param["T_range"] = np.linspace(0,0.5,100)
 species.append(np.array([(0.5,muT,0.5,0.5,0) for muT in (.1,.2,.3,.4,.5,.6,.7,.8,.9)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
+pts.append(([0.5],[0.5]))
 dt.append(0)
 
 ## 4 SP. equal sigma, diff muH. 
@@ -46,6 +55,7 @@ species.append(np.array([(0.4,0.5,0.1,0.1,0),
                          (0.4,0.7,0.1,0.1,0),
                          (0.6,0.6,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
+pts.append(([0.5,0.5],[0.4,0.6]))
 dt.append(0)
 
 ## 2 SP. equal sigma, diff muH. 
@@ -56,15 +66,17 @@ habitat[:,0] = 0.6
 species.append(np.array([(0.4,0.5,0.1,0.1,0),
                          (0.6,0.6,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
+pts.append(([0.5,0.5],[0.4,0.6]))
 dt.append(0)
 
 color = "rb"
 N = len(outputs)
 plt.figure(figsize=(10,N*5))
 
-for n,(out,sp,dti) in enumerate(zip(outputs,species,dt)):
+for n,(out,sp,dti,pt) in enumerate(zip(outputs,species,dt,pts)):
     plt.subplot(N,2,2*n+1)
     d.niches(sp)
+    plt.scatter(*pt)
     plt.subplot(N,2,2*(n+1))
     plt.xlabel("$\Delta T$")
     plt.ylabel("$\Delta CTI$")
