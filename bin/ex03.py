@@ -69,6 +69,31 @@ outputs.append(applyDT(habitat,temperature,species[-1],param))
 pts.append(([0.5,0.5],[0.5,0.6]))
 dt.append(0)
 
+## 2 SP. equal sigma, diff muH. 
+param["name"] = "EX03_04b"
+param["T_range"] = np.linspace(0,0.4,80)
+habitat = np.zeros((2,2))+0.5
+habitat[:,0] = 0.6
+species.append(np.array([(0.5,0.5,0.1,0.1,0),
+                         (0.6,0.6,0.1,0.1,0)]))
+outputs.append(applyDT(habitat,temperature,species[-1],param))
+pts.append(([0.5,0.5],[0.5,0.6]))
+dt.append(0)
+
+
+## 2 SP. equal sigma, diff muH. 
+param["name"] = "EX03_04c"
+param["T_range"] = np.linspace(0,0.5,80)
+habitat = np.zeros((2,2))+0.5
+habitat[:,0] = 0.8
+species.append(np.array([(0.5,0.5,0.1,0.1,0),
+                         (0.8,0.6,0.1,0.1,0)]))
+outputs.append(applyDT(habitat,temperature,species[-1],param))
+pts.append(([0.5,0.5],[0.5,0.8]))
+dt.append(0)
+
+
+
 color = "rb"
 N = len(outputs)
 plt.figure(figsize=(10,N*5))
