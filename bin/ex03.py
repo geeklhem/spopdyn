@@ -41,8 +41,8 @@ param["name"] = "EX03_03"
 param["T_range"] = np.linspace(0,0.4,80)
 habitat = np.zeros((2,2))+0.4
 habitat[:,0] = 0.6
-species.append(np.array([(0.4,0.5,0.1,0.1,0)
-                         (0.6,0.4,0.1,0.1,0)
+species.append(np.array([(0.4,0.5,0.1,0.1,0),
+                         (0.6,0.4,0.1,0.1,0),
                          (0.4,0.7,0.1,0.1,0),
                          (0.6,0.6,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
