@@ -1,2 +1,14 @@
 spopdyn : Stochastic Simulation of Meta-population dynamics
 
+This is the implementation of a simple model to study the impact of
+environmental changes on niche structured communities. It is currently
+actively developped and __do not__ have a stable interface or API
+yet. (It should be better by January 2014).
+
+It consists in a modification and a python wrapping of the excellent
+[pSSAlib](http://mosaic.mpi-cbg.de/?q%3Ddownloads/stochastic_chemical_net)
+(partial-propensity stochastic simulation algorithms library)
+developped by the MOSAIC group (MPU-CBG, Dresden) to efficiently
+simulate chemical reaction-diffusion networks [Ramaswamy 2009, 2010
+and 2011].
+
