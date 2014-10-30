@@ -28,18 +28,17 @@ dt = []
 pts = []
 tc = []
 
-def tc_2habs(muH1,muH2,muT1,muT2):
-    """Return Tc for H=muH1 et H=muH2"""
-    mid = muT1+muT2 / 2   
-    tc_muH1 = (muH1 - muH2)**2 / (2*(muT2 - muT1))
-    tc_muH2 = (muH2 - muH1)**2 / (2*(muT1 - muT2))
-    tc_muH1 += mid
-    tc_muH2 += mid 
-    return (tc_muH1,tc_muH2)
-
 def tc_2sp(muT1,muT2):
     return (muT1 + muT2)/2 
 
+
+def tc_2habs(muH1,muH2,muT1,muT2):
+    """Return Tc for H=muH1 et H=muH2"""
+    tc_muH1 = (muH1 - muH2)**2 / (2*(muT2 - muT1))
+    tc_muH2 = (muH2 - muH1)**2 / (2*(muT1 - muT2))
+    tc_muH1 += tc_2sp(muT1,muT2)
+    tc_muH2 += tc_2sp(muT1,muT2)
+    return (tc_muH1,tc_muH2)
 
 ## 2 SP. equal sigma, diff muH. 
 param["name"] = "EX04_01"
