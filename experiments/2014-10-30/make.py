@@ -4,7 +4,8 @@ DCTI = F(T) for two different habitats.
 from __future__ import division
 import numpy as np
 import spopdyn.display as d
-from spopdyn.dtdcti import applyDT 
+from spopdyn.dtdcti import applyDT
+from spopdyn.provenance import metadata
 import matplotlib.pyplot as plt
 
 temperature = np.zeros((2,2))+0.5
@@ -29,7 +30,6 @@ pts = []
 def tc_2habs(T, muH1,muH2,muT1,muT2):
     """Return Tc for H=muH1 et H=muH2"""
     mid = muT1+muT2 / 2   
-
     tc_muH1 = (muH1 - muH2)**2 / (2*(muT2 - muT1))
     tc_muH2 = (muH2 - muH1)**2 / (2*(muT1 - muT2))
     tc_muH1 += mid
@@ -62,7 +62,7 @@ param["T_range"] = np.linspace(0,0.5,80)
 habitat = np.zeros((2,2))+0.5
 habitat[:,0] = 0.8
 species.append(np.array([(0.5,0.5,0.1,0.1,0),
-                         (0.8,0.6,0.1,0.1,0)]))
+                         (0.6,0.8,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
 pts.append(([0.5,0.5],[0.5,0.8]))
 dt.append(tc_2habs(temperature[0,0],
@@ -100,5 +100,7 @@ for n,(out,sp,dti,pt) in enumerate(zip(outputs,species,dt,pts)):
     plt.hlines(0,*plt.xlim())
     plt.vlines(0,*plt.ylim())
     plt.vlines(dti,*plt.ylim(),color="grey")
-plt.savefig("ex04.png")
-plt.savefig("ex04.eps")
+plt.savefig("dt_dcti_2habs.png")
+plt.savefig("dt_dcti_2habs.eps")
+metadata("dt_dcti_2habs.png")
+metadata("dt_dcti_2habs.eps")

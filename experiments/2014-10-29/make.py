@@ -7,6 +7,7 @@ import numpy as np
 import spopdyn.display as d
 from spopdyn.dtdcti import applyDT 
 import matplotlib.pyplot as plt
+from spopdyn.provenance import metadata
 
 temperature = np.zeros((2,2))+0.5
 habitat = np.zeros((2,2))+0.5
@@ -88,5 +89,8 @@ for n,(out,sp,tci,dti,pt) in enumerate(zip(outputs,species,tc,dt,pts)):
     plt.vlines(0,*plt.ylim())
     plt.vlines(dti,*plt.ylim(),linestyle=":",color="darkblue")
 plt.tight_layout()
+
 plt.savefig("dt_dcti_2sp.png")
 plt.savefig("dt_dcti_2sp.eps")
+metadata("dt_dcti_2sp.png")
+metadata("dt_dcti_2sp.eps")
