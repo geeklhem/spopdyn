@@ -1,3 +1,6 @@
+"""
+DCTI = F(T) for two different habitats. 
+"""778
 from __future__ import division
 import numpy as np
 import spopdyn.display as d
