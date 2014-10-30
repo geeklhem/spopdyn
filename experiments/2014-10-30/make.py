@@ -78,8 +78,8 @@ species.append(np.array([(0.4,0.5,0.1,0.1,0),
                          (0.6,0.6,0.1,0.1,0)]))
 outputs.append(applyDT(habitat,temperature,species[-1],param))
 pts.append(([0.5,0.5],[0.4,0.6]))
-tc.append((tc_2sp(temperature[0,0],species[-1][0,1],species[-1][2,1]),
-           tc_2sp(temperature[0,0],species[-1][1,1],species[-1][3,1])))
+tc.append((tc_2sp(species[-1][0,1],species[-1][2,1]),
+           tc_2sp(species[-1][1,1],species[-1][3,1])))
 dt.append([x-temperature[0,0] for x in tc[-1]])
 
 color = "rb"
