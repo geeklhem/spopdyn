@@ -20,12 +20,17 @@ def log(msg):
 def metadata(path):
     ext = path.split(".")[-1]
     if ext == "svg":
-        open(path, 'a').write("<!-- Metadata \n {} -->\n".format("\n".join(provenance)))
+        open(path, 'a').write("\n<!-- Metadata: \n{} -->\n".format("\n".join(provenance())))
     elif ext == "eps":
-        open(path, 'a').write("%Metadata:\n % {}".format("\n%".join(provenance)))
+        open(path, 'a').write("\n%Metadata:\n%{}\n".format("\n%".join(provenance())))
 
     log("Created:{}".format(path))
     
 if __name__ == "__main__":
     print provenance()
-    metadata("test")
+    subprocess.check_call("touch test.eps",shell=True)
+    subprocess.check_call("touch test.svg",shell=True)
+    metadata("test.eps")
+    metadata("test.svg")
+
+    
