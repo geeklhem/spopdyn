@@ -44,13 +44,54 @@ def create_environment(gridpoints,alpha=2,temperature=.5):
     return habitat,temperature
 
 
+def equilibrium(habitat,temperature,species,initial_pop,param):
+    """Chain experiments with the same parameters until equilibrium is
+    reached.
 
+    The equilibrium is considered reached if the standard deviation of
+    the overall relative abundance of each species is under
+    param["eq_threshold"] on the last 5 timesteps (default 1e-3).
+    
+    Other parameters: See experiment function documentation.
+
+    Returns initial population array (ready to be fed to another experiment).
+
+    """
+
+    if "eq_threshold" not in param:
+        param["eq_threshold"] = 1e-3
+
+    if initial_pop is None:
+        initial_pop = [np.zeros(temperature.shape) + param["K"]/10]*len(species)
+
+    eq = False
+
+    while not eq: 
+        experiment(habitat,temperature,species,initial_pop,param)
+        traj_file = "{}/PDM/PSSA_trajectory_0_0.txt".format(param["name"])
+        eq = True
+
+        # extract the last steps:
+        popdyn = ext.popdyn(traj_file)[-5:,:]
+        # get relative abundances:
+        popdyn = popdyn/np.transpose(np.array([popdyn.sum(1)]*popdyn.shape[1]))
+        # get maximum variation:
+        variation = np.max([np.std(popdyn[:,i]) for i in range(popdyn.shape[1])])
+
+        if variation > param["eq_threshold"]:
+            eq = False
+            initial_pop = ext.get_final_pop(traj_file, param["frames"])
+
+    
 def sticky_experiment(habitat,temperature,species,initial_pop,param):
     """Chain multiple experiments and use the final condition of one as
-    the initial conditions of the following.  See the documentation of
-    experiment to have a description of the parameters. The only
-    difference is that habitat & temperature are list of np.arrays
-    (giving the conditions for the consecutive experiments)
+    the initial conditions of the following. 
+
+    See the documentation of experiment to have a description of the
+    parameters. The only difference is that habitat & temperature are
+    list of np.arrays (giving the conditions for the consecutive
+    experiments)
+
     """
 
     if not os.path.exists(param["name"]):
