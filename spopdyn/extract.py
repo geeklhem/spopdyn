@@ -6,11 +6,11 @@ import cPickle as pickle
 logger = logging.getLogger("spopdyn")
 
 def remove_blanklines(fi):
+    "A sed call to remove blanks lines present in libpssa outputs"
     subprocess.check_call("sed -i '/^$/d' {}".format(fi),shell=True)
 
 def data_extract_single(fi):
     abundance = []
-    
     with open(fi) as f:
         for l in f:
             if len(l) > 1:
@@ -45,9 +45,17 @@ def get_final_pop(fi,n):
                 
     return final_pop
 
+def popdyn(fi): 
+    """Read a libpssa trajectory file and return the population dynamics
+    of every species accross the whole lattice.
 
-def popdyn(fi):
-    # remove empty lines
+    Args: 
+        file (str): the trajectory file (e.g. PSSA_trajectory_0_0.txt)
+    Returns:
+        (np.array): a timestep by species array containing the overall 
+            population size of each species.
+    """
+    
     remove_blanklines(fi)
     ab = []
     with open(fi) as f:

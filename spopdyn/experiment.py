@@ -1,3 +1,4 @@
+from __future__ import division
 import os
 import subprocess
 import logging
@@ -14,21 +15,7 @@ import spopdyn.extract
 import spopdyn.display
 
 PSSALIB = os.path.dirname(__file__)+"/../spopdyn/libpssa/pssa_cli/pssa"
-
 logger = logging.getLogger("spopdyn")
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-ch.setFormatter(logging.Formatter('%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(ch)
-
-logging.addLevelName( logging.WARNING, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
-logging.addLevelName( logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
-logging.addLevelName( logging.INFO, "\033[1;42m%s\033[1;0m" % logging.getLevelName(logging.INFO))
-logging.addLevelName( logging.DEBUG, "\033[1;43m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
-logging.getLogger().addFilter(logging.Filter("vcontact"))
-
-
     
 def growth_rate(temperature,habitat,muH,sH,muT,sT,rho):
     l = len(temperature.flat)
@@ -140,7 +127,8 @@ def experiment(habitat,temperature,species,initial_pop,param):
     if (habitat.shape[1] != temperature.shape[0]
         or habitat.shape[1] != temperature.shape[1]
         or habitat.shape[1] != habitat.shape[0]):
-        raise ValueError("Habitat and Temperature should be square matrix of the same size")
+        raise ValueError(("Habitat and Temperature should be square"
+                          " matrices of the same size"))
     else:
         param["gridpts"] = habitat.shape[0]
 
@@ -164,17 +152,13 @@ def experiment(habitat,temperature,species,initial_pop,param):
         gr = [growth_rate(temperature, habitat,
                           s[0], s[2], s[1], s[3], s[4])
               for s in species]
-        #        null_gr = [n for n,x in enumerate(gr) if x.sum()==0]
-        #if len(null_gr):
-        #    logger.warning("Species {} dropped (null growth rate in every cell)")
-        #    gr.pop(null_gr)
         sbml = spopdyn.sbml_writer.CompetitiveLV(gr,
                                                  param["d"],
                                                  param["m"],
                                                  param["alpha"],
                                                  initial_pop,
                                                  param["gridpts"],
-                                             )
+        )
         sbml.save(paths["sbml"])
         logger.info("SBML file for model '{}' saved as {}.".format(sbml,
                                                                    paths["sbml"]))
@@ -189,7 +173,9 @@ def experiment(habitat,temperature,species,initial_pop,param):
         cfg = spopdyn.libpssa_config.libpSSA_config(paths["sbml"],
                                                     param["name"]+"/",
                                                     sbml.species,
-                                                    dt=param["dt"], tend=param["tend"],n=param["replicas"],
+                                                    dt=param["dt"],
+                                                    tend=param["tend"],
+                                                    n=param["replicas"],
                                                     spatial=True,
                                                     gridpoints=param["gridpts"],
                                                     K=param["K"]*param["gridpts"]**2)
@@ -215,7 +201,7 @@ def experiment(habitat,temperature,species,initial_pop,param):
     logger.info("Data extraction...")
     if not os.path.exists(paths["data"]):
         files = glob.glob("{}/PDM/PSSA_trajectory_*.txt".format(param["name"]))
-        data = spopdyn.extract.extract_multiple_trajectories_to_timeseries(files,param["frames"],species)
+        data = spopdyn.extract.extract_multiple_trajectories_to_timeseries(files, param["frames"], species)
         with open(paths["data"],"w") as f:
             logger.info("Saving data as {}.".format(paths["data"]))
             pickle.dump(data,f)

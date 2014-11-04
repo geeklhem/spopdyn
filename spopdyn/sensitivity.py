@@ -22,7 +22,6 @@ def sensitivity_analysis(D, X, Y=None):
     if len(D.shape) == 1:
         D = np.transpose(np.vstack([D**n for n in  range(len(D))]))
 
-
     print D
     Dinv = np.linalg.inv(D)
     print dX, Dinv

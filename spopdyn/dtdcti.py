@@ -1,6 +1,9 @@
+""" dtdcti - explore the variation of CTI in response of a variation of temperature."""
 import cPickle as pkle
 import os
 import multiprocessing as mp
+import logging
+
 # Fix pool size
 try:
     p = {24:6,8:5}[mp.cpu_count()]
@@ -11,10 +14,11 @@ except KeyError:
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 import spopdyn.experiment as e
 import spopdyn.extract as ext
 
-e.logger.setLevel(e.logging.CRITICAL)
+logger = logging.getLogger("spopdyn")
 
 def measure(args):
     dt,CTI,CGI,habitat,temperature,species,initial_pop,param = args
@@ -28,9 +32,12 @@ def measure(args):
     return dt,data[0]["Local CTI"][-1]-CTI, data[0]["Local CSI"][-1]-CGI
 
 def applyDT(habitat,temperature,species,param):
+    
     param["path"] = param["name"] + "_applyDT"
     if not os.path.exists( param["path"]):
         os.mkdir( param["path"])
+
+    #---- Go to equilibrium -----#
     param["name"] =  param["path"]+"/intial_conditions"
     uniform_pop = [np.zeros(temperature.shape) + 10]*len(species)
     
