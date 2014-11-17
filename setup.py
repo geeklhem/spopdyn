@@ -19,6 +19,7 @@ setup(name='spopdyn',
           'numpy',
           'scipy',
           'python-libsbml',
+          'SALib'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],

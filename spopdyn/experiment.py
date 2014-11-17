@@ -58,6 +58,10 @@ def equilibrium(habitat,temperature,species,initial_pop,param):
 
     """
 
+    name = param["name"]
+    if not os.path.exists(param["name"]):
+        os.mkdir(param["name"])
+
     if "eq_threshold" not in param:
         param["eq_threshold"] = 1e-3
 
@@ -65,22 +69,34 @@ def equilibrium(habitat,temperature,species,initial_pop,param):
         initial_pop = [np.zeros(temperature.shape) + param["K"]/10]*len(species)
 
     eq = False
-
-    while not eq: 
+    step = 0
+    files = []
+    while not eq:
+        param["name"] = name + "/step_{}".format(step)
+        files.append(param["name"] + "/data.pkle")
         experiment(habitat,temperature,species,initial_pop,param)
         traj_file = "{}/PDM/PSSA_trajectory_0_0.txt".format(param["name"])
-        eq = True
 
         # extract the last steps:
-        popdyn = ext.popdyn(traj_file)[-5:,:]
+        popdyn = spopdyn.extract.popdyn(traj_file)[-20:,:]
         # get relative abundances:
         popdyn = popdyn/np.transpose(np.array([popdyn.sum(1)]*popdyn.shape[1]))
         # get maximum variation:
         variation = np.max([np.std(popdyn[:,i]) for i in range(popdyn.shape[1])])
+        # update initial pop 
+        initial_pop = spopdyn.extract.get_final_pop(traj_file, param["frames"])
 
-        if variation > param["eq_threshold"]:
-            eq = False
-            initial_pop = ext.get_final_pop(traj_file, param["frames"])
+        if variation < param["eq_threshold"]:
+            eq = True
+        step += 1
+        if step > 10:
+            raise MemoryError
+
+    data = spopdyn.extract.fusion_consecutive(files)
+    with open(name+"data.pkle","w") as f:
+        pickle.dump((data,initial_pop),f)
+    
+    return data, initial_pop
 
     
 def sticky_experiment(habitat,temperature,species,initial_pop,param):
@@ -101,8 +117,7 @@ def sticky_experiment(habitat,temperature,species,initial_pop,param):
         logger.warning("{}/ exists already.".format(param["name"]))
 
 
-    
-
+        
     env = {}
     if len(habitat) == 1:
         env["Habitat"] = habitat[0] 
@@ -111,8 +126,6 @@ def sticky_experiment(habitat,temperature,species,initial_pop,param):
         env["Temperature"] = temperature[0]
         temperature = temperature * len(habitat)
 
-
-        
     name = param["name"]
     paths = {"data":name+"/data.pkle"}
     if not os.path.exists(paths["data"]):
@@ -126,8 +139,8 @@ def sticky_experiment(habitat,temperature,species,initial_pop,param):
             initial_pop = spopdyn.extract.get_final_pop(param["name"]+"/PDM/PSSA_trajectory_0_0.txt",param["frames"])
         data = spopdyn.extract.fusion_consecutive(data_file)
         with open(paths["data"],"w") as f:
-                logger.info("Saving data as {}.".format(paths["data"]))
-                pickle.dump((data,env_path),f)
+            logger.info("Saving data as {}.".format(paths["data"]))
+            pickle.dump((data,env_path),f)
     else:
         with open(paths["data"],"r") as f:
             logger.info("Loading data from {}.".format(paths["data"]))
@@ -204,7 +217,7 @@ def experiment(habitat,temperature,species,initial_pop,param):
         logger.info("SBML file for model '{}' saved as {}.".format(sbml,
                                                                    paths["sbml"]))
         with open(paths["ic"],'w') as f:
-                pickle.dump((species, param, habitat, temperature,initial_pop), f)
+            pickle.dump((species, param, habitat, temperature,initial_pop), f)
     else:
         with open(paths["ic"],'r') as f:
             species, param, habitat, temperature,initial_pop = pickle.load(f)
@@ -270,5 +283,5 @@ def experiment(habitat,temperature,species,initial_pop,param):
     plt.savefig("{}/experimental_report.pdf".format(param["name"]),pad_inches=0)
     plt.savefig("{}/experimental_report.png".format(param["name"]),pad_inches=0)
     plt.clf() 
-
+    plt.close()
 
